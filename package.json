@@ -9,7 +9,11 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@dudigital/react-native-zoomable-view": "^1.1.4",
     "expo": "~54.0.29",
+    "expo-build-properties": "~1.0.10",
+    "expo-image": "~3.0.11",
+    "expo-splash-screen": "~31.0.12",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
     "react-native": "0.81.5"
