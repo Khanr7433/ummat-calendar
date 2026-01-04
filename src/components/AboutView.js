@@ -17,22 +17,36 @@ export default function AboutView({ onBack }) {
       </TouchableOpacity>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.sectionTitle}>Madarsa Baitul Uloom</Text>
+        <Text style={styles.sectionTitle}>BAITUL ULOOM KONDHWA PUNE</Text>
+
+        <Text style={styles.subTitle}>Description</Text>
         <Text style={styles.paragraph}>
-          Madarsa Baitul Uloom, located in Pune, is dedicated to providing
-          authentic Islamic education and services to the community.
+          Dear Viewers,{"\n"}
+          Assalamualikum Warahmatullahi wa barakatuh{"\n"}
+          In view of the importance of religious education and the need of
+          Ummat-e-Muslima this madrasa has been started in 2003 and thereafter
+          Modern Education was also added in it.
         </Text>
 
-        <Text style={styles.sectionTitle}>Founder</Text>
+        <Text style={styles.subTitle}>Objects/Visions</Text>
         <Text style={styles.paragraph}>
-          This calendar was established under the guidance of Mufti Shakir Khan
-          Sahab, may Allah preserve him.
+          The primary objective of this Madrasa is to make such scholars who are
+          full of religious knowledge who are aware of various skills, who are
+          economically self-sufficient so that they can serve for the religion
+          being volunteer.
         </Text>
 
-        <Text style={styles.sectionTitle}>Mission</Text>
+        <Text style={styles.subTitle}>Educational Faculties</Text>
         <Text style={styles.paragraph}>
-          To connect the Ummah with the correct Islamic dates and events,
-          promoting unity and awareness.
+          A complete religious education means Diniyat, Hifz, Tajweed and
+          Aalimiyat (scholars) and along with Daur-e-Hadees Mufti and Qazi are
+          also made here.
+        </Text>
+
+        <Text style={styles.subTitle}>Place of Establishment</Text>
+        <Text style={styles.paragraph}>
+          The Madrasa is Located in Sr.No.42, Kondhwa Khurd, Pune-48,
+          Maharashtra, INDIA.
         </Text>
       </ScrollView>
     </View>
@@ -60,11 +74,19 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#2c3e50",
     marginTop: 20,
     marginBottom: 8,
+    textAlign: "center",
+  },
+  subTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#2c3e50",
+    marginTop: 16,
+    marginBottom: 6,
   },
   paragraph: {
     fontSize: 16,
