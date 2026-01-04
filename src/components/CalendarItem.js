@@ -1,15 +1,21 @@
-import { View, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  Text,
+} from "react-native";
 import { Image } from "expo-image";
 import { ReactNativeZoomableView } from "@dudigital/react-native-zoomable-view";
 import React, { memo } from "react";
 
 const { width } = Dimensions.get("window");
 
-const CalendarItem = memo(({ item, onZoomChange }) => {
+const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
   return (
     <View style={styles.container}>
       <ReactNativeZoomableView
-        maxZoom={3}
+        maxZoom={2}
         minZoom={1}
         zoomStep={0.5}
         initialZoom={1}
@@ -24,7 +30,7 @@ const CalendarItem = memo(({ item, onZoomChange }) => {
         }}
       >
         <Image
-          source={item.image}
+          source={showBack ? item.backImage : item.frontImage}
           style={styles.image}
           contentFit="contain"
           transition={500}
