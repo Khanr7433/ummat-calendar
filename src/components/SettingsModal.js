@@ -9,6 +9,7 @@ import {
   ScrollView,
   SafeAreaView,
   Pressable,
+  Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -74,6 +75,10 @@ export default function SettingsModal({ visible, onClose }) {
 }
 
 function MenuView({ onAboutPress, onPrivacyPress }) {
+  const handleYouTubePress = () => {
+    Linking.openURL("https://www.youtube.com/@MadrasaBaitulUloomPune");
+  };
+
   return (
     <View style={styles.menuContainer}>
       <View style={styles.brandingContainer}>
@@ -105,6 +110,14 @@ function MenuView({ onAboutPress, onPrivacyPress }) {
             <Text style={styles.menuItemText}>Privacy Policy</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#bdc3c7" />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.menuItem} onPress={handleYouTubePress}>
+          <View style={styles.menuItemLeft}>
+            <Ionicons name="logo-youtube" size={22} color="#e74c3c" />
+            <Text style={styles.menuItemText}>Visit our YouTube Channel</Text>
+          </View>
+          <Ionicons name="open-outline" size={20} color="#bdc3c7" />
         </TouchableOpacity>
       </View>
 
