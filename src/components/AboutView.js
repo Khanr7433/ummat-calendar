@@ -11,17 +11,15 @@ import { Ionicons } from "@expo/vector-icons";
 export default function AboutView({ onBack }) {
   return (
     <View style={styles.subViewContainer}>
-      <TouchableOpacity onPress={onBack} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#2c3e50" />
-        <Text style={styles.backButtonText}>Back</Text>
-      </TouchableOpacity>
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContent}
+      >
         <Text style={styles.sectionTitle}>BAITUL ULOOM KONDHWA PUNE</Text>
 
         <Text style={styles.subTitle}>Description</Text>
         <Text style={styles.paragraph}>
-          Dear Viewers,{"\n"}
+          Dear Users,{"\n"}
           Assalamualikum Warahmatullahi wa barakatuh{"\n"}
           In view of the importance of religious education and the need of
           Ummat-e-Muslima this madrasa has been started in 2003 and thereafter

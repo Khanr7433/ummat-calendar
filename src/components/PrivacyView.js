@@ -11,11 +11,6 @@ import { Ionicons } from "@expo/vector-icons";
 export default function PrivacyView({ onBack }) {
   return (
     <View style={styles.subViewContainer}>
-      <TouchableOpacity onPress={onBack} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#2c3e50" />
-        <Text style={styles.backButtonText}>Back</Text>
-      </TouchableOpacity>
-
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.paragraph}>
           Your privacy is important to us. This privacy policy explains how our
