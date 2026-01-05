@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { TOPOGRAPHY } from "../constants/typography";
 
 export default function AboutView({ onBack }) {
   return (
@@ -14,6 +15,8 @@ export default function AboutView({ onBack }) {
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        persistentScrollbar={true}
       >
         <Text style={styles.sectionTitle}>BAITUL ULOOM KONDHWA PUNE</Text>
 
@@ -72,24 +75,21 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
+    ...TOPOGRAPHY.h2,
     color: "#2c3e50",
     marginTop: 20,
     marginBottom: 8,
     textAlign: "center",
   },
   subTitle: {
-    fontSize: 18,
-    fontWeight: "600",
+    ...TOPOGRAPHY.h3,
     color: "#2c3e50",
     marginTop: 16,
     marginBottom: 6,
   },
   paragraph: {
-    fontSize: 16,
+    ...TOPOGRAPHY.body,
     color: "#34495e",
-    lineHeight: 24,
     marginBottom: 12,
   },
 });

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { TOPOGRAPHY } from "../constants/typography";
 
 function Header({
   monthName,
@@ -83,8 +84,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   selectorText: {
-    fontSize: 16,
-    fontWeight: "600",
+    ...TOPOGRAPHY.button,
     color: "#2c3e50",
     letterSpacing: 0.3,
   },

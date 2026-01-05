@@ -5,13 +5,19 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { TOPOGRAPHY } from "../constants/typography";
 
 export default function PrivacyView({ onBack }) {
   return (
     <View style={styles.subViewContainer}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        persistentScrollbar={true}
+      >
         <Text style={styles.paragraph}>
           Your privacy is important to us. This privacy policy explains how our
           app "Ummat Calendar" handles your data.
@@ -36,6 +42,13 @@ export default function PrivacyView({ onBack }) {
           If you have any questions regarding this policy, please contact us
           ensuring to mention "Ummat Calendar Privacy" in the subject line.
         </Text>
+        <TouchableOpacity
+          onPress={() => Linking.openURL("mailto:baitululoompune@gmail.com")}
+        >
+          <Text style={[styles.paragraph, { color: "#3498db" }]}>
+            baitululoompune@gmail.com
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -62,16 +75,14 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+    ...TOPOGRAPHY.h3,
     color: "#2c3e50",
     marginTop: 20,
     marginBottom: 8,
   },
   paragraph: {
-    fontSize: 16,
+    ...TOPOGRAPHY.body,
     color: "#34495e",
-    lineHeight: 24,
     marginBottom: 12,
   },
 });

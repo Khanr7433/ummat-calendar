@@ -6,6 +6,7 @@ import {
   FlatList,
   StyleSheet,
 } from "react-native";
+import { TOPOGRAPHY } from "../constants/typography";
 
 const MonthSelectorModal = ({
   visible,
@@ -62,6 +63,8 @@ const MonthSelectorModal = ({
                 </Text>
               </TouchableOpacity>
             )}
+            showsVerticalScrollIndicator={true}
+            persistentScrollbar={true}
           />
         </TouchableOpacity>
       </TouchableOpacity>
@@ -98,8 +101,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   modalTitle: {
-    fontSize: 24,
-    fontWeight: "800",
+    ...TOPOGRAPHY.h1,
     color: "#1a252f",
   },
   closeIcon: {

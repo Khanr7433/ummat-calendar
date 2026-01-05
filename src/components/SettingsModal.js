@@ -7,6 +7,7 @@ import { StatusBar } from "expo-status-bar";
 import AboutView from "./AboutView";
 import PrivacyView from "./PrivacyView";
 import MenuView from "./MenuView";
+import { TOPOGRAPHY } from "../constants/typography";
 
 export default function SettingsModal({ visible, onClose }) {
   const [currentView, setCurrentView] = useState("menu");
@@ -111,10 +112,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: "600",
+    ...TOPOGRAPHY.h3,
+    fontSize: 17, // slight override
     color: "#2c3e50",
-    letterSpacing: 0.3,
   },
   closeButton: {
     position: "absolute",

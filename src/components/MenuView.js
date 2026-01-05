@@ -8,6 +8,7 @@ import {
   Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { TOPOGRAPHY } from "../constants/typography";
 
 export default function MenuView({ onAboutPress, onPrivacyPress }) {
   const handleYouTubePress = () => {
@@ -150,17 +151,18 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   logo: {
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 150,
     marginBottom: 12,
   },
   appName: {
+    ...TOPOGRAPHY.h2,
     fontSize: 22,
-    fontWeight: "700",
     color: "#2c3e50",
     marginBottom: 4,
   },
   appVersion: {
+    ...TOPOGRAPHY.caption,
     fontSize: 13,
     color: "#95a5a6",
     letterSpacing: 0.5,
