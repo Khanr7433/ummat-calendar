@@ -59,6 +59,13 @@ export default function HomeScreen() {
   const currentItem = calendarData[currentMonthIndex];
   const hasBackImage = currentItem?.backImage?.uri;
 
+  const handleSelectMonthPress = useCallback(() => setModalVisible(true), []);
+  const handleSettingsPress = useCallback(() => setSettingsVisible(true), []);
+  const handleFlipToggle = useCallback(
+    () => setShowBack(!showBack),
+    [showBack]
+  );
+
   return (
     <SafeAreaView style={styles.container} edges={["left", "right", "bottom"]}>
       <ExpoStatusBar
@@ -69,12 +76,12 @@ export default function HomeScreen() {
 
       <Header
         monthName={calendarData[currentMonthIndex]?.monthName}
-        onSelectMonthPress={() => setModalVisible(true)}
+        onSelectMonthPress={handleSelectMonthPress}
         showBack={showBack}
-        onFlipToggle={() => setShowBack(!showBack)}
+        onFlipToggle={handleFlipToggle}
         hasBackImage={hasBackImage}
         topInset={insets.top}
-        onSettingsPress={() => setSettingsVisible(true)}
+        onSettingsPress={handleSettingsPress}
       />
 
       <FlatList
@@ -90,9 +97,9 @@ export default function HomeScreen() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         initialScrollIndex={initialMonthIndex}
-        initialNumToRender={1}
-        maxToRenderPerBatch={1}
-        windowSize={2}
+        initialNumToRender={3}
+        maxToRenderPerBatch={5}
+        windowSize={5}
         removeClippedSubviews={true}
         keyExtractor={keyExtractor}
         extraData={showBack}

@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function Header({
+function Header({
   monthName,
   onSelectMonthPress,
   showBack,
@@ -109,3 +109,5 @@ const styles = StyleSheet.create({
     color: "#2c3e50",
   },
 });
+
+export default React.memo(Header);

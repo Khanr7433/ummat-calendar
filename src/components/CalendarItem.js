@@ -1,19 +1,45 @@
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  Text,
-} from "react-native";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { ReactNativeZoomableView } from "@dudigital/react-native-zoomable-view";
-import React, { memo } from "react";
-
-const { width } = Dimensions.get("window");
+import React, { memo, useState, useMemo } from "react";
+import { useScreenDimensions } from "../hooks/useScreenDimensions";
+import { COLORS } from "../constants/colors";
+import { LAYOUT } from "../constants/layout";
 
 const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
+  const { width, isSmallDevice } = useScreenDimensions();
+  const [aspectRatio, setAspectRatio] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const containerStyle = useMemo(
+    () => ({
+      width: width,
+      height: "100%",
+      alignItems: "center",
+      justifyContent: "center",
+    }),
+    [width]
+  );
+
+  const imageStyle = useMemo(
+    () => [
+      styles.staticImage,
+      {
+        width: width - LAYOUT.spacing.s,
+        height: LAYOUT.calendarItem.fullImageHeightPercentage,
+      },
+      isSmallDevice && {
+        width: width - 20,
+        height: LAYOUT.calendarItem.reducedImageHeightPercentage,
+        marginTop: LAYOUT.calendarItem.smallDeviceMarginTop,
+      },
+      aspectRatio && { aspectRatio, height: undefined },
+    ],
+    [width, isSmallDevice, aspectRatio]
+  );
+
   return (
-    <View style={styles.container}>
+    <View style={containerStyle}>
       <ReactNativeZoomableView
         maxZoom={2}
         minZoom={1}
@@ -29,12 +55,27 @@ const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
           }
         }}
       >
+        {loading && (
+          <ActivityIndicator
+            size="large"
+            color={COLORS.black}
+            style={styles.loader}
+          />
+        )}
         <Image
           source={showBack ? item.backImage : item.frontImage}
-          style={styles.image}
+          style={imageStyle}
           contentFit="contain"
-          transition={500}
           quality={100}
+          cachePolicy="disk"
+          onLoad={(e) => {
+            setLoading(false);
+            const { width, height } = e.source;
+            if (width && height) {
+              setAspectRatio(width / height);
+            }
+          }}
+          onError={() => setLoading(false)}
         />
       </ReactNativeZoomableView>
     </View>
@@ -42,21 +83,19 @@ const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
 });
 
 const styles = StyleSheet.create({
-  container: {
-    width,
-    height: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
   zoomableView: {
     width: "100%",
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
   },
-  image: {
-    width: width,
-    height: "100%",
+  loader: {
+    position: "absolute",
+    zIndex: 1,
+  },
+  staticImage: {
+    borderWidth: 1,
+    borderColor: COLORS.black,
   },
 });
 
