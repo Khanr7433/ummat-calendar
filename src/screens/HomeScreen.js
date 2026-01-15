@@ -11,6 +11,7 @@ import CalendarItem from "../components/CalendarItem";
 import MonthSelectorModal from "../components/MonthSelectorModal";
 import Header from "../components/Header";
 import SettingsModal from "../components/SettingsModal";
+import RemindersModal from "../components/RemindersModal";
 
 const { width } = Dimensions.get("window");
 
@@ -19,6 +20,7 @@ export default function HomeScreen() {
   const flatListRef = useRef(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [remindersVisible, setRemindersVisible] = useState(false);
   const [showBack, setShowBack] = useState(false);
 
   const currentDate = new Date();
@@ -61,6 +63,7 @@ export default function HomeScreen() {
 
   const handleSelectMonthPress = useCallback(() => setModalVisible(true), []);
   const handleSettingsPress = useCallback(() => setSettingsVisible(true), []);
+  const handleRemindersPress = useCallback(() => setRemindersVisible(true), []);
   const handleFlipToggle = useCallback(
     () => setShowBack(!showBack),
     [showBack]
@@ -82,6 +85,7 @@ export default function HomeScreen() {
         hasBackImage={hasBackImage}
         topInset={insets.top}
         onSettingsPress={handleSettingsPress}
+        onRemindersPress={handleRemindersPress}
       />
 
       <FlatList
@@ -124,6 +128,11 @@ export default function HomeScreen() {
       <SettingsModal
         visible={settingsVisible}
         onClose={() => setSettingsVisible(false)}
+      />
+
+      <RemindersModal
+        visible={remindersVisible}
+        onClose={() => setRemindersVisible(false)}
       />
     </SafeAreaView>
   );

@@ -11,6 +11,7 @@ function Header({
   hasBackImage,
   topInset,
   onSettingsPress,
+  onRemindersPress,
 }) {
   return (
     <View style={[styles.header, { paddingTop: topInset + 8 }]}>
@@ -22,6 +23,13 @@ function Header({
       </TouchableOpacity>
 
       <View style={styles.rightContainer}>
+        <TouchableOpacity
+          onPress={onRemindersPress}
+          style={styles.settingsButton}
+        >
+          <Ionicons name="notifications-outline" size={24} color="#2c3e50" />
+        </TouchableOpacity>
+
         <TouchableOpacity
           onPress={onSettingsPress}
           style={styles.settingsButton}
