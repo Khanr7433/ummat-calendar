@@ -4,11 +4,12 @@ import { Platform } from "react-native";
 import Constants from "expo-constants";
 
 const STORAGE_KEY = "@ummat_calendar_reminders";
-const CHANNEL_ID = "ummat_reminders";
+const CHANNEL_ID = "ummat_reminders_v2";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -19,12 +20,36 @@ export const ReminderService = {
     try {
       if (Platform.OS === "android") {
         await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-          name: "Calendar Reminders",
+          name: "Calendar Alarms",
           importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
+          vibrationPattern: [0, 500, 200, 500],
           lightColor: "#FF231F7C",
+          lockscreenVisibility:
+            Notifications.AndroidNotificationVisibility.PUBLIC,
+          audioAttributes: {
+            usage: Notifications.AndroidAudioUsage.ALARM,
+            contentType: Notifications.AndroidAudioContentType.SONIFICATION,
+          },
         });
       }
+
+      await Notifications.setNotificationCategoryAsync("alarm-actions", [
+        {
+          identifier: "SNOOZE",
+          buttonTitle: "Remind again",
+          options: {
+            opensAppToForeground: false,
+          },
+        },
+        {
+          identifier: "DISMISS",
+          buttonTitle: "OK",
+          options: {
+            isDestructive: true,
+            opensAppToForeground: false,
+          },
+        },
+      ]);
 
       const { status: existingStatus } =
         await Notifications.getPermissionsAsync();
@@ -71,7 +96,11 @@ export const ReminderService = {
         content: {
           title: reminder.title,
           body: reminder.description,
-          data: { id: Date.now() },
+          data: {
+            id: Date.now(),
+            snoozeMinutes: reminder.snoozeMinutes || 10,
+          },
+          categoryIdentifier: "alarm-actions",
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -125,7 +154,11 @@ export const ReminderService = {
         content: {
           title: reminder.title,
           body: reminder.description,
-          data: { id: Date.now() },
+          data: {
+            id: Date.now(),
+            snoozeMinutes: reminder.snoozeMinutes || 10,
+          },
+          categoryIdentifier: "alarm-actions",
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -168,6 +201,32 @@ export const ReminderService = {
       return true;
     } catch (e) {
       console.error("Error deleting reminder", e);
+      return false;
+    }
+  },
+  async snoozeReminder(originalContent) {
+    try {
+      const { title, body, data } = originalContent;
+      const snoozeMinutes =
+        data && data.snoozeMinutes ? data.snoozeMinutes : 10;
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: `${title} (Snoozed)`,
+          body,
+          data: { ...data },
+          categoryIdentifier: "alarm-actions",
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: snoozeMinutes * 60,
+          channelId: CHANNEL_ID,
+          repeats: false,
+        },
+      });
+      return true;
+    } catch (e) {
+      console.error("Error snoozing reminder", e);
       return false;
     }
   },

@@ -8,6 +8,8 @@ import {
   Platform,
   Alert,
   BackHandler,
+  ScrollView,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -27,6 +29,7 @@ export default function RemindersModal({ visible, onClose }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date());
+  const [snoozeMinutes, setSnoozeMinutes] = useState(10);
 
   const [editingId, setEditingId] = useState(null);
   const [originalReminder, setOriginalReminder] = useState(null);
@@ -58,7 +61,15 @@ export default function RemindersModal({ visible, onClose }) {
     );
 
     return () => backHandler.remove();
-  }, [visible, showAddForm, editingId, title, description, date]);
+  }, [
+    visible,
+    showAddForm,
+    editingId,
+    title,
+    description,
+    date,
+    snoozeMinutes,
+  ]);
 
   const loadReminders = async () => {
     const data = await ReminderService.getReminders();
@@ -83,6 +94,7 @@ export default function RemindersModal({ visible, onClose }) {
     setTitle(reminder.title);
     setDescription(reminder.description || "");
     setDate(new Date(reminder.date));
+    setSnoozeMinutes(reminder.snoozeMinutes || 10);
     setEditingId(reminder.id);
     setOriginalReminder(reminder);
     setShowAddForm(true);
@@ -99,8 +111,10 @@ export default function RemindersModal({ visible, onClose }) {
     const isDescChanged = description !== (originalReminder.description || "");
     const isDateChanged =
       date.getTime() !== new Date(originalReminder.date).getTime();
+    const isSnoozeChanged =
+      snoozeMinutes !== (originalReminder.snoozeMinutes || 10);
 
-    return isTitleChanged || isDescChanged || isDateChanged;
+    return isTitleChanged || isDescChanged || isDateChanged || isSnoozeChanged;
   };
 
   const onHardwareBackPress = () => {
@@ -134,6 +148,7 @@ export default function RemindersModal({ visible, onClose }) {
     setTitle("");
     setDescription("");
     setDate(new Date());
+    setSnoozeMinutes(10);
     setEditingId(null);
     setOriginalReminder(null);
     setShowAddForm(false);
@@ -150,6 +165,7 @@ export default function RemindersModal({ visible, onClose }) {
         title,
         description,
         date: date.toISOString(),
+        snoozeMinutes,
       };
 
       if (editingId) {
@@ -292,56 +308,87 @@ export default function RemindersModal({ visible, onClose }) {
             )}
           </>
         ) : (
-          <View style={styles.formContainer}>
-            <AppInput
-              label="Title"
-              value={title}
-              onChangeText={setTitle}
-              placeholder="Read Quran"
-            />
-
-            <AppInput
-              label="Description (Optional)"
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Surah Yaseen"
-              multiline
-            />
-
-            <Text style={styles.label}>Date & Time</Text>
-            <View style={styles.dateTimeBtns}>
-              <TouchableOpacity
-                style={styles.dateBtn}
-                onPress={() => showMode("date")}
-              >
-                <Text style={styles.dateBtnText}>
-                  {date.toLocaleDateString()}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.dateBtn}
-                onPress={() => showMode("time")}
-              >
-                <Text style={styles.dateBtnText}>
-                  {date.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {showPicker && (
-              <DateTimePicker
-                testID="dateTimePicker"
-                value={date}
-                mode={mode}
-                is24Hour={false}
-                display="default"
-                onChange={onChangeDate}
-                minimumDate={new Date()}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.formContainer}
+          >
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
+              <AppInput
+                label="Title"
+                value={title}
+                onChangeText={setTitle}
+                placeholder="Read Quran"
               />
-            )}
+
+              <AppInput
+                label="Description (Optional)"
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Surah Yaseen"
+                multiline
+              />
+
+              <Text style={styles.label}>Date & Time</Text>
+              <View style={styles.dateTimeBtns}>
+                <TouchableOpacity
+                  style={styles.dateBtn}
+                  onPress={() => showMode("date")}
+                >
+                  <Text style={styles.dateBtnText}>
+                    {date.toLocaleDateString()}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.dateBtn}
+                  onPress={() => showMode("time")}
+                >
+                  <Text style={styles.dateBtnText}>
+                    {date.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {showPicker && (
+                <DateTimePicker
+                  testID="dateTimePicker"
+                  value={date}
+                  mode={mode}
+                  is24Hour={false}
+                  display="default"
+                  onChange={onChangeDate}
+                  minimumDate={new Date()}
+                />
+              )}
+
+              <Text style={styles.label}>Remind again in (mins)</Text>
+              <View style={styles.snoozeOptions}>
+                {[5, 10, 15, 30].map((min) => (
+                  <TouchableOpacity
+                    key={min}
+                    style={[
+                      styles.snoozeBtn,
+                      snoozeMinutes === min && styles.snoozeBtnActive,
+                    ]}
+                    onPress={() => setSnoozeMinutes(min)}
+                  >
+                    <Text
+                      style={[
+                        styles.snoozeBtnText,
+                        snoozeMinutes === min && styles.snoozeBtnTextActive,
+                      ]}
+                    >
+                      {min}m
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
 
             <View style={styles.formActions}>
               <AppButton
@@ -356,7 +403,7 @@ export default function RemindersModal({ visible, onClose }) {
                 variant="primary"
               />
             </View>
-          </View>
+          </KeyboardAvoidingView>
         )}
       </View>
     </ModalContainer>
@@ -474,6 +521,32 @@ const styles = StyleSheet.create({
   dateBtnText: {
     ...TOPOGRAPHY.input,
     fontWeight: "500",
+  },
+  snoozeOptions: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 24,
+  },
+  snoozeBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#e1e4e8",
+  },
+  snoozeBtnActive: {
+    backgroundColor: "#3498db",
+    borderColor: "#3498db",
+  },
+  snoozeBtnText: {
+    ...TOPOGRAPHY.caption,
+    fontWeight: "600",
+    color: "#7f8c8d",
+  },
+  snoozeBtnTextActive: {
+    color: "#fff",
   },
   formActions: {
     flexDirection: "row",

@@ -1,6 +1,7 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import { View, FlatList, StyleSheet, Dimensions } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
+import * as Notifications from "expo-notifications";
 import {
   useSafeAreaInsets,
   SafeAreaView,
@@ -12,6 +13,7 @@ import MonthSelectorModal from "../components/MonthSelectorModal";
 import Header from "../components/Header";
 import SettingsModal from "../components/SettingsModal";
 import RemindersModal from "../components/RemindersModal";
+import { ReminderService } from "../services/ReminderService";
 
 const { width } = Dimensions.get("window");
 
@@ -22,6 +24,21 @@ export default function HomeScreen() {
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [remindersVisible, setRemindersVisible] = useState(false);
   const [showBack, setShowBack] = useState(false);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      async (response) => {
+        const actionId = response.actionIdentifier;
+        if (actionId === "SNOOZE") {
+          await ReminderService.snoozeReminder(
+            response.notification.request.content
+          );
+        }
+      }
+    );
+
+    return () => subscription.remove();
+  }, []);
 
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
