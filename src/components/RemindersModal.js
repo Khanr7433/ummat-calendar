@@ -2,21 +2,23 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  Modal,
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  TextInput,
   Platform,
   Alert,
   BackHandler,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { ReminderService } from "../services/ReminderService";
 import { TOPOGRAPHY } from "../constants/typography";
+
+import ModalContainer from "./ui/ModalContainer";
+import ModalHeader from "./ui/ModalHeader";
+import AppButton from "./ui/AppButton";
+import AppInput from "./ui/AppInput";
+import EmptyState from "./ui/EmptyState";
 
 export default function RemindersModal({ visible, onClose }) {
   const [reminders, setReminders] = useState([]);
@@ -60,7 +62,20 @@ export default function RemindersModal({ visible, onClose }) {
 
   const loadReminders = async () => {
     const data = await ReminderService.getReminders();
-    data.sort((a, b) => new Date(a.date) - new Date(b.date));
+    const now = new Date();
+
+    data.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      const isExpiredA = dateA < now;
+      const isExpiredB = dateB < now;
+
+      if (isExpiredA === isExpiredB) {
+        return dateA - dateB;
+      }
+      return isExpiredA ? 1 : -1;
+    });
+
     setReminders(data);
   };
 
@@ -184,227 +199,182 @@ export default function RemindersModal({ visible, onClose }) {
     setMode(currentMode);
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      onPress={() => handleEditPress(item)}
-      style={styles.reminderItem}
-    >
-      <View style={styles.reminderIconContainer}>
-        <Ionicons name="notifications" size={24} color="#3498db" />
-      </View>
-      <View style={styles.reminderInfo}>
-        <Text style={styles.reminderTitle}>{item.title}</Text>
-        {item.description ? (
-          <Text style={styles.reminderDesc} numberOfLines={2}>
-            {item.description}
-          </Text>
-        ) : null}
-        <View style={styles.timeContainer}>
-          <Ionicons name="time-outline" size={14} color="#95a5a6" />
-          <Text style={styles.reminderTime}>
-            {new Date(item.date).toLocaleString([], {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </Text>
-        </View>
-      </View>
+  const renderItem = ({ item }) => {
+    const isExpired = new Date(item.date) < new Date();
+
+    return (
       <TouchableOpacity
-        onPress={() => handleDeleteReminder(item.id)}
-        style={styles.deleteButton}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        activeOpacity={0.7}
+        onPress={() => handleEditPress(item)}
+        style={[styles.reminderItem, isExpired && styles.expiredItem]}
       >
-        <Ionicons name="trash-outline" size={22} color="#ff6b6b" />
+        <View
+          style={[
+            styles.reminderIconContainer,
+            isExpired && styles.expiredIconContainer,
+          ]}
+        >
+          <Ionicons
+            name={isExpired ? "alert-circle" : "notifications"}
+            size={24}
+            color={isExpired ? "#95a5a6" : "#3498db"}
+          />
+        </View>
+        <View style={styles.reminderInfo}>
+          <Text style={[styles.reminderTitle, isExpired && styles.expiredText]}>
+            {item.title}
+          </Text>
+          {item.description ? (
+            <Text style={styles.reminderDesc} numberOfLines={2}>
+              {item.description}
+            </Text>
+          ) : null}
+          <View style={styles.timeContainer}>
+            <Ionicons name="time-outline" size={14} color="#95a5a6" />
+            <Text style={styles.reminderTime}>
+              {new Date(item.date).toLocaleString([], {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </Text>
+            {isExpired && <Text style={styles.expiredLabel}> • Expired</Text>}
+          </View>
+        </View>
+        <TouchableOpacity
+          onPress={() => handleDeleteReminder(item.id)}
+          style={styles.deleteButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="trash-outline" size={22} color="#ff6b6b" />
+        </TouchableOpacity>
       </TouchableOpacity>
-    </TouchableOpacity>
-  );
+    );
+  };
+
+  const headerActionLeft = showAddForm ? handleCloseForm : onClose;
+  const headerIconRight = !showAddForm ? "add" : null;
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true} // Keep true but occupy full screen with white bg
-      onRequestClose={onHardwareBackPress}
-    >
-      <StatusBar style="dark" backgroundColor="#fff" />
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={showAddForm ? handleCloseForm : onClose}
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={24} color="#2c3e50" />
-          </TouchableOpacity>
+    <ModalContainer visible={visible} onRequestClose={onHardwareBackPress}>
+      <ModalHeader
+        title={
+          showAddForm
+            ? editingId
+              ? "Edit Reminder"
+              : "Add Reminder"
+            : "Reminders"
+        }
+        leftIcon="arrow-back"
+        onLeftPress={headerActionLeft}
+        rightIcon={headerIconRight}
+        onRightPress={() => setShowAddForm(true)}
+      />
 
-          <Text style={styles.headerTitle}>
-            {showAddForm
-              ? editingId
-                ? "Edit Reminder"
-                : "Add Reminder"
-              : "Reminders"}
-          </Text>
-        </View>
+      <View style={styles.contentContainer}>
+        {!showAddForm ? (
+          <>
+            {reminders.length === 0 ? (
+              <EmptyState text="No reminders set.">
+                Tap the <Text style={styles.plusSymbol}>+</Text> button to add a
+                reminder.
+              </EmptyState>
+            ) : (
+              <FlatList
+                data={reminders}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
+          </>
+        ) : (
+          <View style={styles.formContainer}>
+            <AppInput
+              label="Title"
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Read Quran"
+            />
 
-        <View style={styles.contentContainer}>
-          {!showAddForm ? (
-            <>
-              {reminders.length === 0 ? (
-                <View style={styles.emptyState}>
-                  <Text style={styles.emptyText}>No reminders set.</Text>
-                </View>
-              ) : (
-                <FlatList
-                  data={reminders}
-                  renderItem={renderItem}
-                  keyExtractor={(item) => item.id}
-                  contentContainerStyle={styles.listContent}
-                  showsVerticalScrollIndicator={false}
-                />
-              )}
+            <AppInput
+              label="Description (Optional)"
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Surah Yaseen"
+              multiline
+            />
+
+            <Text style={styles.label}>Date & Time</Text>
+            <View style={styles.dateTimeBtns}>
               <TouchableOpacity
-                style={styles.fab}
-                onPress={() => setShowAddForm(true)}
+                style={styles.dateBtn}
+                onPress={() => showMode("date")}
               >
-                <Ionicons name="add" size={30} color="#fff" />
+                <Text style={styles.dateBtnText}>
+                  {date.toLocaleDateString()}
+                </Text>
               </TouchableOpacity>
-            </>
-          ) : (
-            <View style={styles.formContainer}>
-              <Text style={styles.label}>Title</Text>
-              <TextInput
-                style={styles.input}
-                value={title}
-                onChangeText={setTitle}
-                placeholder="Buy groceries"
-                placeholderTextColor="#bdc3c7"
-              />
-
-              <Text style={styles.label}>Description (Optional)</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={description}
-                onChangeText={setDescription}
-                placeholder="Milk, Eggs, Bread..."
-                placeholderTextColor="#bdc3c7"
-                multiline
-              />
-
-              <Text style={styles.label}>Date & Time</Text>
-              <View style={styles.dateTimeBtns}>
-                <TouchableOpacity
-                  style={styles.dateBtn}
-                  onPress={() => showMode("date")}
-                >
-                  <Text style={styles.dateBtnText}>
-                    {date.toLocaleDateString()}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dateBtn}
-                  onPress={() => showMode("time")}
-                >
-                  <Text style={styles.dateBtnText}>
-                    {date.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {showPicker && (
-                <DateTimePicker
-                  testID="dateTimePicker"
-                  value={date}
-                  mode={mode}
-                  is24Hour={false}
-                  display="default"
-                  onChange={onChangeDate}
-                  minimumDate={new Date()}
-                />
-              )}
-
-              <View style={styles.formActions}>
-                <TouchableOpacity
-                  style={styles.cancelBtn}
-                  onPress={handleCloseForm}
-                >
-                  <Text style={styles.cancelBtnText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.saveBtn}
-                  onPress={handleAddReminder}
-                >
-                  <Text style={styles.saveBtnText}>
-                    {editingId ? "Update" : "Save"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                style={styles.dateBtn}
+                onPress={() => showMode("time")}
+              >
+                <Text style={styles.dateBtnText}>
+                  {date.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Text>
+              </TouchableOpacity>
             </View>
-          )}
-        </View>
-      </SafeAreaView>
-    </Modal>
+
+            {showPicker && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode={mode}
+                is24Hour={false}
+                display="default"
+                onChange={onChangeDate}
+                minimumDate={new Date()}
+              />
+            )}
+
+            <View style={styles.formActions}>
+              <AppButton
+                title="Cancel"
+                onPress={handleCloseForm}
+                variant="secondary"
+              />
+              <View style={{ width: 16 }} />
+              <AppButton
+                title={editingId ? "Update" : "Save"}
+                onPress={handleAddReminder}
+                variant="primary"
+              />
+            </View>
+          </View>
+        )}
+      </View>
+    </ModalContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
   contentContainer: {
     flex: 1,
-    paddingHorizontal: 16, // Add padding to content similar to Settings views usually
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f8f9fa",
-    position: "relative",
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.02,
-    shadowRadius: 2,
-    elevation: 1,
-    marginBottom: 4,
-  },
-  headerTitle: {
-    ...TOPOGRAPHY.h3,
-    fontSize: 17,
-    color: "#2c3e50",
-    textAlign: "center",
-  },
-  closeButton: {
-    position: "absolute",
-    right: 16,
-    padding: 4,
-  },
-  backButton: {
-    position: "absolute",
-    left: 16,
-    padding: 4,
+    paddingHorizontal: 16,
   },
   listContent: {
     paddingTop: 16,
-    paddingBottom: 100, // Space for FAB
+    paddingBottom: 100,
   },
-  emptyState: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#95a5a6",
+  plusSymbol: {
+    fontWeight: "700",
+    color: "#2c3e50",
   },
   reminderItem: {
     backgroundColor: "#fff",
@@ -421,6 +391,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#f0f2f5",
   },
+  expiredItem: {
+    opacity: 0.6,
+    backgroundColor: "#f8f9fa",
+    borderColor: "#e1e4e8",
+  },
+  expiredIconContainer: {
+    backgroundColor: "#e1e4e8",
+  },
+  expiredText: {
+    color: "#7f8c8d",
+    textDecorationLine: "line-through",
+  },
+  expiredLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#e74c3c",
+    marginLeft: 4,
+  },
   reminderIconContainer: {
     width: 48,
     height: 48,
@@ -434,73 +422,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   reminderTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: "#2c3e50",
+    ...TOPOGRAPHY.cardTitle,
     marginBottom: 4,
   },
   reminderDesc: {
-    fontSize: 14,
-    color: "#7f8c8d",
+    ...TOPOGRAPHY.cardSubtitle,
     marginBottom: 8,
-    lineHeight: 20,
   },
   timeContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
   reminderTime: {
-    fontSize: 13,
-    color: "#95a5a6",
+    ...TOPOGRAPHY.caption,
     marginLeft: 6,
-    fontWeight: "500",
   },
   deleteButton: {
     padding: 8,
     borderRadius: 20,
     backgroundColor: "#fff0f0",
   },
-  fab: {
-    position: "absolute",
-    bottom: 30,
-    right: 20,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: "#3498db",
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 8,
-    shadowColor: "#3498db",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
   formContainer: {
     flex: 1,
     paddingTop: 10,
   },
   label: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#57606f",
+    ...TOPOGRAPHY.label,
     marginBottom: 8,
     marginTop: 16,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#e1e4e8",
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    backgroundColor: "#f8f9fa",
-    color: "#2c3e50",
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: "top",
   },
   dateTimeBtns: {
     flexDirection: "row",
@@ -523,44 +472,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   dateBtnText: {
-    fontSize: 16,
-    color: "#2c3e50",
+    ...TOPOGRAPHY.input,
     fontWeight: "500",
   },
   formActions: {
     flexDirection: "row",
-    justifyContent: "space-between",
     marginTop: "auto",
-    gap: 16,
     paddingBottom: 20,
-  },
-  cancelBtn: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 14,
-    backgroundColor: "#f1f2f6",
-    alignItems: "center",
-  },
-  cancelBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#747d8c",
-  },
-  saveBtn: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 14,
-    backgroundColor: "#3498db",
-    alignItems: "center",
-    shadowColor: "#3498db",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  saveBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
   },
 });

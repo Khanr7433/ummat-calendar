@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import { Modal, View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { StatusBar } from "expo-status-bar";
-
+import { View, StyleSheet } from "react-native";
 import AboutView from "./AboutView";
 import PrivacyView from "./PrivacyView";
 import MenuView from "./MenuView";
-import { TOPOGRAPHY } from "../constants/typography";
+
+import ModalContainer from "./ui/ModalContainer";
+import ModalHeader from "./ui/ModalHeader";
 
 export default function SettingsModal({ visible, onClose }) {
   const [currentView, setCurrentView] = useState("menu");
@@ -30,6 +28,14 @@ export default function SettingsModal({ visible, onClose }) {
     setTimeout(resetState, 200);
   };
 
+  const isMenu = currentView === "menu";
+  const headerTitle =
+    currentView === "menu"
+      ? "Settings"
+      : currentView === "about"
+      ? "About Us"
+      : "Privacy Policy";
+
   const renderContent = () => {
     switch (currentView) {
       case "about":
@@ -46,79 +52,24 @@ export default function SettingsModal({ visible, onClose }) {
     }
   };
 
-  return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={handleRequestClose}
-    >
-      <StatusBar style="dark" backgroundColor="#fff" />
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={
-              currentView !== "menu"
-                ? () => setCurrentView("menu")
-                : handleCloseButton
-            }
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={24} color="#2c3e50" />
-          </TouchableOpacity>
+  const handleLeftPress = isMenu
+    ? handleCloseButton
+    : () => setCurrentView("menu");
 
-          <Text style={styles.headerTitle}>
-            {currentView === "menu"
-              ? "Settings"
-              : currentView === "about"
-              ? "About Us"
-              : "Privacy Policy"}
-          </Text>
-        </View>
-        <View style={styles.contentContainer}>{renderContent()}</View>
-      </SafeAreaView>
-    </Modal>
+  return (
+    <ModalContainer visible={visible} onRequestClose={handleRequestClose}>
+      <ModalHeader
+        title={headerTitle}
+        leftIcon="arrow-back"
+        onLeftPress={handleLeftPress}
+      />
+      <View style={styles.contentContainer}>{renderContent()}</View>
+    </ModalContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
   contentContainer: {
     flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f8f9fa",
-    position: "relative",
-    backgroundColor: "#fff",
-    // Optional shadow for header separation
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.02,
-    shadowRadius: 2,
-    elevation: 1,
-    marginBottom: 4,
-  },
-  headerTitle: {
-    ...TOPOGRAPHY.h3,
-    fontSize: 17, // slight override
-    color: "#2c3e50",
-  },
-  closeButton: {
-    position: "absolute",
-    right: 16,
-    padding: 4,
-  },
-  backButton: {
-    position: "absolute",
-    left: 16,
-    padding: 4,
   },
 });

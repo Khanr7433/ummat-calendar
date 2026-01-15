@@ -156,15 +156,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   appName: {
-    ...TOPOGRAPHY.h2,
+    ...TOPOGRAPHY.h1,
     fontSize: 22,
-    color: "#2c3e50",
     marginBottom: 4,
   },
   appVersion: {
     ...TOPOGRAPHY.caption,
     fontSize: 13,
-    color: "#95a5a6",
     letterSpacing: 0.5,
   },
   menuItems: {
@@ -199,8 +197,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   menuItemText: {
-    fontSize: 16,
-    color: "#34495e",
+    ...TOPOGRAPHY.body,
     fontWeight: "500",
   },
   footer: {
@@ -209,8 +206,8 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   footerText: {
+    ...TOPOGRAPHY.caption,
     color: "#bdc3c7",
-    fontSize: 12,
   },
   socialSection: {
     marginTop: 8,
@@ -223,12 +220,8 @@ const styles = StyleSheet.create({
     borderColor: "#f0f0f0",
   },
   socialTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#7f8c8d",
+    ...TOPOGRAPHY.sectionHeader,
     marginBottom: 12,
-    textTransform: "uppercase",
-    letterSpacing: 1,
   },
   socialRow: {
     flexDirection: "row",

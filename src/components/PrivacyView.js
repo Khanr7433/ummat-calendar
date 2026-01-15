@@ -76,13 +76,11 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...TOPOGRAPHY.h3,
-    color: "#2c3e50",
     marginTop: 20,
     marginBottom: 8,
   },
   paragraph: {
     ...TOPOGRAPHY.body,
-    color: "#34495e",
     marginBottom: 12,
   },
 });
