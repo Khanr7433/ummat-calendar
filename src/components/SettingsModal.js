@@ -56,14 +56,16 @@ export default function SettingsModal({ visible, onClose }) {
       <StatusBar style="dark" backgroundColor="#fff" />
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          {currentView !== "menu" && (
-            <TouchableOpacity
-              onPress={() => setCurrentView("menu")}
-              style={styles.backButton}
-            >
-              <Ionicons name="arrow-back" size={24} color="#2c3e50" />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            onPress={
+              currentView !== "menu"
+                ? () => setCurrentView("menu")
+                : handleCloseButton
+            }
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color="#2c3e50" />
+          </TouchableOpacity>
 
           <Text style={styles.headerTitle}>
             {currentView === "menu"
@@ -72,13 +74,6 @@ export default function SettingsModal({ visible, onClose }) {
               ? "About Us"
               : "Privacy Policy"}
           </Text>
-
-          <TouchableOpacity
-            onPress={handleCloseButton}
-            style={styles.closeButton}
-          >
-            <Ionicons name="close" size={24} color="#2c3e50" />
-          </TouchableOpacity>
         </View>
         <View style={styles.contentContainer}>{renderContent()}</View>
       </SafeAreaView>

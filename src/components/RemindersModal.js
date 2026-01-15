@@ -9,6 +9,7 @@ import {
   TextInput,
   Platform,
   Alert,
+  BackHandler,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -21,10 +22,12 @@ export default function RemindersModal({ visible, onClose }) {
   const [reminders, setReminders] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
 
-  // Form State
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date());
+
+  const [editingId, setEditingId] = useState(null);
+  const [originalReminder, setOriginalReminder] = useState(null);
   const [mode, setMode] = useState("date");
   const [showPicker, setShowPicker] = useState(false);
 
@@ -34,11 +37,91 @@ export default function RemindersModal({ visible, onClose }) {
     }
   }, [visible]);
 
+  useEffect(() => {
+    const backAction = () => {
+      if (visible) {
+        if (showAddForm) {
+          handleCloseForm();
+          return true;
+        }
+        onClose();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [visible, showAddForm, editingId, title, description, date]);
+
   const loadReminders = async () => {
     const data = await ReminderService.getReminders();
-    // Sort by date upcoming
     data.sort((a, b) => new Date(a.date) - new Date(b.date));
     setReminders(data);
+  };
+
+  const handleEditPress = (reminder) => {
+    setTitle(reminder.title);
+    setDescription(reminder.description || "");
+    setDate(new Date(reminder.date));
+    setEditingId(reminder.id);
+    setOriginalReminder(reminder);
+    setShowAddForm(true);
+  };
+
+  const hasUnsavedChanges = () => {
+    if (!showAddForm) return false;
+
+    if (!editingId) {
+      return title.trim().length > 0 || description.trim().length > 0;
+    }
+
+    const isTitleChanged = title !== originalReminder.title;
+    const isDescChanged = description !== (originalReminder.description || "");
+    const isDateChanged =
+      date.getTime() !== new Date(originalReminder.date).getTime();
+
+    return isTitleChanged || isDescChanged || isDateChanged;
+  };
+
+  const onHardwareBackPress = () => {
+    if (showAddForm) {
+      handleCloseForm();
+    } else {
+      onClose();
+    }
+  };
+
+  const handleCloseForm = () => {
+    if (hasUnsavedChanges()) {
+      Alert.alert(
+        "Unsaved Changes",
+        "You have unsaved changes. Are you sure you want to discard them?",
+        [
+          { text: "Keep Editing", style: "cancel" },
+          {
+            text: "Discard",
+            style: "destructive",
+            onPress: resetForm,
+          },
+        ]
+      );
+    } else {
+      resetForm();
+    }
+  };
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setDate(new Date());
+    setEditingId(null);
+    setOriginalReminder(null);
+    setShowAddForm(false);
   };
 
   const handleAddReminder = async () => {
@@ -48,25 +131,27 @@ export default function RemindersModal({ visible, onClose }) {
     }
 
     try {
-      const newReminder = {
+      const reminderData = {
         title,
         description,
         date: date.toISOString(),
       };
 
-      await ReminderService.addReminder(newReminder);
+      if (editingId) {
+        await ReminderService.updateReminder({
+          ...reminderData,
+          id: editingId,
+        });
+        Alert.alert("Success", "Reminder updated!");
+      } else {
+        await ReminderService.addReminder(reminderData);
+        Alert.alert("Success", "Reminder scheduled!");
+      }
 
-      // Reset form
-      setTitle("");
-      setDescription("");
-      setDate(new Date());
-      setShowAddForm(false);
-
-      // Reload list
+      resetForm();
       loadReminders();
-      Alert.alert("Success", "Reminder scheduled!");
     } catch (error) {
-      Alert.alert("Error", "Failed to schedule reminder");
+      Alert.alert("Error", "Failed to save reminder");
     }
   };
 
@@ -100,7 +185,11 @@ export default function RemindersModal({ visible, onClose }) {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.reminderItem}>
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => handleEditPress(item)}
+      style={styles.reminderItem}
+    >
       <View style={styles.reminderIconContainer}>
         <Ionicons name="notifications" size={24} color="#3498db" />
       </View>
@@ -131,7 +220,7 @@ export default function RemindersModal({ visible, onClose }) {
       >
         <Ionicons name="trash-outline" size={22} color="#ff6b6b" />
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -139,28 +228,25 @@ export default function RemindersModal({ visible, onClose }) {
       visible={visible}
       animationType="slide"
       transparent={true} // Keep true but occupy full screen with white bg
-      onRequestClose={onClose}
+      onRequestClose={onHardwareBackPress}
     >
       <StatusBar style="dark" backgroundColor="#fff" />
       <SafeAreaView style={styles.container}>
-        {/* Header matching SettingsModal */}
         <View style={styles.header}>
-          {showAddForm && (
-            <TouchableOpacity
-              onPress={() => setShowAddForm(false)}
-              style={styles.backButton}
-            >
-              <Ionicons name="arrow-back" size={24} color="#2c3e50" />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            onPress={showAddForm ? handleCloseForm : onClose}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color="#2c3e50" />
+          </TouchableOpacity>
 
           <Text style={styles.headerTitle}>
-            {showAddForm ? "Add Reminder" : "Reminders"}
+            {showAddForm
+              ? editingId
+                ? "Edit Reminder"
+                : "Add Reminder"
+              : "Reminders"}
           </Text>
-
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#2c3e50" />
-          </TouchableOpacity>
         </View>
 
         <View style={styles.contentContainer}>
@@ -245,7 +331,7 @@ export default function RemindersModal({ visible, onClose }) {
               <View style={styles.formActions}>
                 <TouchableOpacity
                   style={styles.cancelBtn}
-                  onPress={() => setShowAddForm(false)}
+                  onPress={handleCloseForm}
                 >
                   <Text style={styles.cancelBtnText}>Cancel</Text>
                 </TouchableOpacity>
@@ -253,7 +339,9 @@ export default function RemindersModal({ visible, onClose }) {
                   style={styles.saveBtn}
                   onPress={handleAddReminder}
                 >
-                  <Text style={styles.saveBtnText}>Save</Text>
+                  <Text style={styles.saveBtnText}>
+                    {editingId ? "Update" : "Save"}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>

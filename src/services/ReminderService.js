@@ -98,6 +98,60 @@ export const ReminderService = {
     }
   },
 
+  async updateReminder(reminder) {
+    try {
+      const currentReminders = await this.getReminders();
+      const oldReminderIndex = currentReminders.findIndex(
+        (r) => r.id === reminder.id
+      );
+
+      if (oldReminderIndex === -1) {
+        throw new Error("Reminder not found");
+      }
+
+      const oldReminder = currentReminders[oldReminderIndex];
+      if (oldReminder.notificationId) {
+        await Notifications.cancelScheduledNotificationAsync(
+          oldReminder.notificationId
+        );
+      }
+
+      const triggerDate = new Date(reminder.date);
+      const now = new Date();
+      const diff = triggerDate.getTime() - now.getTime();
+      const seconds = Math.max(2, Math.floor(diff / 1000));
+
+      const notificationId = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: reminder.title,
+          body: reminder.description,
+          data: { id: Date.now() },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: seconds,
+          channelId: CHANNEL_ID,
+          repeats: false,
+        },
+      });
+
+      const updatedReminder = {
+        ...reminder,
+        notificationId,
+      };
+
+      const updatedReminders = [...currentReminders];
+      updatedReminders[oldReminderIndex] = updatedReminder;
+
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedReminders));
+
+      return updatedReminder;
+    } catch (e) {
+      console.error("Error updating reminder", e);
+      throw e;
+    }
+  },
+
   async deleteReminder(id) {
     try {
       const currentReminders = await this.getReminders();
