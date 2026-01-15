@@ -80,17 +80,12 @@ export default function CustomSplashScreen({ onFinish }) {
         <Text style={styles.splashTextSubtitle}>
           BY:{" "}
           <Text style={styles.splashTextSubtitleBold}>
-            MADRASA BAITUL ULOOM, PUNE
+            MADRASA BAITUL ULOOM
           </Text>
-        </Text>
-
-        <Text style={[styles.splashTextSubtitle, { marginTop: 16 }]}>
-          FOUNDER:
-        </Text>
-        <Text
-          style={[styles.splashTextSubtitle, styles.splashTextSubtitleBold]}
-        >
-          MUFTI SHAKIR KHAN SAHAB
+          {"\n"}
+          <Text style={styles.splashTextSubtitleBold}>
+            KONDHWA, PUNE, 411048
+          </Text>
         </Text>
       </Animated.View>
     </View>
