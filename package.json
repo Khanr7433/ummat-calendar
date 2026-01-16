@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "dev": "expo start --dev-client"
   },
   "dependencies": {
     "@dudigital/react-native-zoomable-view": "^1.1.4",
@@ -15,6 +16,7 @@
     "expo": "^54.0.31",
     "expo-build-properties": "~1.0.10",
     "expo-constants": "~18.0.13",
+    "expo-dev-client": "~6.0.20",
     "expo-device": "~8.0.10",
     "expo-image": "~3.0.11",
     "expo-notifications": "~0.32.16",

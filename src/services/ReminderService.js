@@ -35,17 +35,17 @@ export const ReminderService = {
 
       await Notifications.setNotificationCategoryAsync("alarm-actions", [
         {
-          identifier: "SNOOZE",
-          buttonTitle: "Remind again",
-          options: {
-            opensAppToForeground: false,
-          },
-        },
-        {
           identifier: "DISMISS",
           buttonTitle: "OK",
           options: {
             isDestructive: true,
+            opensAppToForeground: false,
+          },
+        },
+        {
+          identifier: "SNOOZE",
+          buttonTitle: "Remind again",
+          options: {
             opensAppToForeground: false,
           },
         },
@@ -88,30 +88,27 @@ export const ReminderService = {
       }
 
       const triggerDate = new Date(reminder.date);
-      const now = new Date();
-      const diff = triggerDate.getTime() - now.getTime();
-      const seconds = Math.max(2, Math.floor(diff / 1000));
+      const id = Date.now();
 
       const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
           title: reminder.title,
           body: reminder.description,
           data: {
-            id: Date.now(),
+            id: id,
             snoozeMinutes: reminder.snoozeMinutes || 10,
           },
           categoryIdentifier: "alarm-actions",
         },
         trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-          seconds: seconds,
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: triggerDate,
           channelId: CHANNEL_ID,
-          repeats: false,
         },
       });
 
       const newReminder = {
-        id: Date.now().toString(),
+        id: id.toString(),
         notificationId,
         ...reminder,
       };
@@ -146,10 +143,6 @@ export const ReminderService = {
       }
 
       const triggerDate = new Date(reminder.date);
-      const now = new Date();
-      const diff = triggerDate.getTime() - now.getTime();
-      const seconds = Math.max(2, Math.floor(diff / 1000));
-
       const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
           title: reminder.title,
@@ -161,10 +154,9 @@ export const ReminderService = {
           categoryIdentifier: "alarm-actions",
         },
         trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-          seconds: seconds,
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: triggerDate,
           channelId: CHANNEL_ID,
-          repeats: false,
         },
       });
 
@@ -204,13 +196,17 @@ export const ReminderService = {
       return false;
     }
   },
-  async snoozeReminder(originalContent) {
+  async snoozeReminder(originalContent, oldNotificationId) {
+    console.log("Snoozing reminder...", originalContent.title);
     try {
       const { title, body, data } = originalContent;
       const snoozeMinutes =
         data && data.snoozeMinutes ? data.snoozeMinutes : 10;
 
-      await Notifications.scheduleNotificationAsync({
+      const triggerDate = new Date(Date.now() + snoozeMinutes * 60 * 1000);
+      console.log("Scheduling snoozed notification for:", triggerDate);
+
+      const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
           title: `${title} (Snoozed)`,
           body,
@@ -218,16 +214,130 @@ export const ReminderService = {
           categoryIdentifier: "alarm-actions",
         },
         trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-          seconds: snoozeMinutes * 60,
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: triggerDate,
           channelId: CHANNEL_ID,
-          repeats: false,
         },
       });
+      console.log("Snooze scheduled successfully");
+
+      if (data && data.id) {
+        try {
+          const currentReminders = await this.getReminders();
+          const reminderIndex = currentReminders.findIndex(
+            (r) =>
+              r.id === data.id.toString() ||
+              r.id === data.id ||
+              (oldNotificationId && r.notificationId === oldNotificationId)
+          );
+
+          if (reminderIndex !== -1) {
+            currentReminders[reminderIndex] = {
+              ...currentReminders[reminderIndex],
+              date: triggerDate.toISOString(),
+              notificationId: notificationId,
+            };
+            await AsyncStorage.setItem(
+              STORAGE_KEY,
+              JSON.stringify(currentReminders)
+            );
+            console.log("Updated snoozed reminder in storage");
+          }
+        } catch (storageError) {
+          console.error("Error updating storage for snooze", storageError);
+        }
+      }
+
       return true;
     } catch (e) {
       console.error("Error snoozing reminder", e);
       return false;
     }
+  },
+
+  async rescheduleAllReminders() {
+    console.log("Rescheduling all reminders to clean up ghosts...");
+    try {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+      console.log("Cancelled all existing notifications.");
+
+      const currentReminders = await this.getReminders();
+      const now = new Date();
+      const updatedReminders = [];
+      let rescheduledCount = 0;
+
+      for (const reminder of currentReminders) {
+        const triggerDate = new Date(reminder.date);
+
+        if (triggerDate > now) {
+          const notificationId = await Notifications.scheduleNotificationAsync({
+            content: {
+              title: reminder.title,
+              body: reminder.description,
+              data: {
+                id: reminder.id,
+                snoozeMinutes: reminder.snoozeMinutes || 10,
+              },
+              categoryIdentifier: "alarm-actions",
+            },
+            trigger: {
+              type: Notifications.SchedulableTriggerInputTypes.DATE,
+              date: triggerDate,
+              channelId: CHANNEL_ID,
+            },
+          });
+
+          updatedReminders.push({
+            ...reminder,
+            notificationId: notificationId,
+          });
+          rescheduledCount++;
+        } else {
+          updatedReminders.push({
+            ...reminder,
+            notificationId: null,
+          });
+        }
+      }
+
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedReminders));
+      console.log(`Rescheduled ${rescheduledCount} active reminders.`);
+      return true;
+    } catch (e) {
+      console.error("Error rescheduling reminders", e);
+      return false;
+    }
+  },
+
+  initialize() {
+    Notifications.addNotificationResponseReceivedListener(async (response) => {
+      const actionIdentifier = response.actionIdentifier;
+      const content = response.notification.request.content;
+      const notificationId = response.notification.request.identifier;
+
+      console.log(`Notification action received: ${actionIdentifier}`);
+
+      try {
+        await Notifications.dismissNotificationAsync(notificationId);
+        console.log(`Notification ${notificationId} dismissed`);
+      } catch (err) {
+        console.warn("Failed to dismiss notification:", err);
+      }
+
+      if (actionIdentifier === "SNOOZE") {
+        await this.snoozeReminder(content, notificationId);
+      } else if (actionIdentifier === "DISMISS") {
+        console.log("Notification dismissed via OK button");
+      }
+    });
+
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
   },
 };
