@@ -48,10 +48,7 @@ function Header({
 
 const styles = StyleSheet.create({
   header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
+    width: "100%",
     paddingHorizontal: 20,
     paddingBottom: 16,
     backgroundColor: "rgba(255, 255, 255, 0.96)",
