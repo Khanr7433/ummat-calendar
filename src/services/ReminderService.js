@@ -31,7 +31,7 @@ export const ReminderService = {
         triggerDate,
         {
           id: id.toString(),
-          snoozeMinutes: reminder.snoozeMinutes || 10,
+          snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
         },
       );
 
@@ -75,7 +75,7 @@ export const ReminderService = {
         triggerDate,
         {
           id: Date.now().toString(),
-          snoozeMinutes: reminder.snoozeMinutes || 10,
+          snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
         },
       );
 
@@ -180,7 +180,7 @@ export const ReminderService = {
             triggerDate,
             {
               id: reminder.id.toString(),
-              snoozeMinutes: reminder.snoozeMinutes || 10,
+              snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
             },
           );
 

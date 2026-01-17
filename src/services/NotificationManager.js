@@ -1,6 +1,5 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-import Constants from "expo-constants";
 import { REMINDER_CONFIG } from "../constants/reminderConfig";
 
 class NotificationManager {
@@ -56,14 +55,13 @@ class NotificationManager {
     try {
       const trigger = {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: triggerDate.getTime(),
+        date: triggerDate,
         channelId: REMINDER_CONFIG.CHANNEL_ID,
       };
 
       console.log("[NotificationManager] Scheduling:", {
         title,
         triggerDate: triggerDate.toISOString(),
-        timestamp: trigger.date,
       });
 
       return await Notifications.scheduleNotificationAsync({
