@@ -14,8 +14,8 @@ export const LAYOUT = {
     xl: 32,
   },
   calendarItem: {
-    reducedImageHeightPercentage: "80%",
+    reducedImageHeightPercentage: "75%",
     fullImageHeightPercentage: "100%",
-    smallDeviceMarginTop: 70,
+    smallDeviceMarginTop: 0,
   },
 };

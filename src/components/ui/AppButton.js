@@ -1,6 +1,7 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { TOPOGRAPHY } from "../../constants/typography";
+import { COLORS } from "../../constants/colors";
 
 export default function AppButton({
   title,
@@ -55,26 +56,26 @@ const styles = StyleSheet.create({
     ...TOPOGRAPHY.button,
   },
   primaryBtn: {
-    backgroundColor: "#3498db",
-    shadowColor: "#3498db",
+    backgroundColor: COLORS.primary,
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3, // Slightly more punchy
     shadowRadius: 8,
     elevation: 4,
   },
   primaryText: {
-    color: "#fff",
+    color: COLORS.white,
   },
   secondaryBtn: {
-    backgroundColor: "#f1f2f6",
+    backgroundColor: COLORS.inputBg, // Subtle gray background
   },
   secondaryText: {
-    color: "#747d8c",
+    color: COLORS.textSecondary,
   },
   destructiveBtn: {
-    backgroundColor: "#fff0f0",
+    backgroundColor: COLORS.dangerBg,
   },
   destructiveText: {
-    color: "#e74c3c",
+    color: COLORS.danger,
   },
 });

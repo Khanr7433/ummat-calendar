@@ -7,7 +7,7 @@ import { COLORS } from "../constants/colors";
 import { LAYOUT } from "../constants/layout";
 
 const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
-  const { width, isSmallDevice } = useScreenDimensions();
+  const { width, height, isSmallDevice } = useScreenDimensions();
   const [aspectRatio, setAspectRatio] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,27 +21,43 @@ const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
     [width]
   );
 
+  const finalImageDimensions = useMemo(() => {
+    const paddingH = isSmallDevice ? 24 : LAYOUT.spacing.m;
+    const maxWidth = width - paddingH;
+
+    const heightPercent = isSmallDevice
+      ? parseFloat(LAYOUT.calendarItem.reducedImageHeightPercentage) / 100
+      : parseFloat(LAYOUT.calendarItem.fullImageHeightPercentage) / 100;
+
+    const maxHeight = height * heightPercent;
+
+    if (!aspectRatio) {
+      return { width: maxWidth, height: maxHeight };
+    }
+
+    const heightAtMaxWidth = maxWidth / aspectRatio;
+
+    if (heightAtMaxWidth <= maxHeight) {
+      return { width: maxWidth, height: heightAtMaxWidth };
+    } else {
+      const widthAtMaxHeight = maxHeight * aspectRatio;
+      return { width: widthAtMaxHeight, height: maxHeight };
+    }
+  }, [width, height, isSmallDevice, aspectRatio]);
+
   const imageStyle = useMemo(
-    () => [
-      styles.image,
-      {
-        width: width - LAYOUT.spacing.m, // More breathing room
-        height: LAYOUT.calendarItem.fullImageHeightPercentage,
-      },
-      isSmallDevice && {
-        width: width - 24, // Consistent padding
-        height: LAYOUT.calendarItem.reducedImageHeightPercentage,
-        marginTop: LAYOUT.calendarItem.smallDeviceMarginTop,
-      },
-      aspectRatio && { aspectRatio, height: undefined },
-    ],
-    [width, isSmallDevice, aspectRatio]
+    () => ({
+      ...styles.image,
+      width: finalImageDimensions.width,
+      height: finalImageDimensions.height,
+    }),
+    [finalImageDimensions]
   );
 
   return (
     <View style={containerStyle}>
       <ReactNativeZoomableView
-        maxZoom={3} // Increased zoom for better readability
+        maxZoom={3}
         minZoom={1}
         zoomStep={0.5}
         initialZoom={1}
@@ -54,7 +70,7 @@ const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
             onZoomChange(true);
           }
         }}
-        movementSensibility={1.3} // Smoother panning
+        movementSensibility={1.3}
       >
         <View style={styles.cardContainer}>
           {loading && (
@@ -93,17 +109,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   cardContainer: {
-    // Premium Card Look
     backgroundColor: COLORS.white,
-    borderRadius: 0, // No radius as requested
-
-    // Soft Shadow (All Sides)
+    borderRadius: 0,
     shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 0 }, // Center shadow
-    shadowOpacity: 0.25, // Slightly stronger opacity
-    shadowRadius: 20, // Larger radius to spread out
-    elevation: 10, // Higher elevation for Android
-
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
     overflow: "visible",
     padding: 0,
   },
@@ -112,7 +124,7 @@ const styles = StyleSheet.create({
     top: "50%",
     left: "50%",
     zIndex: 10,
-    marginTop: -15, // Half of size "large" roughly
+    marginTop: -15,
     marginLeft: -15,
   },
   image: {
