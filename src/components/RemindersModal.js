@@ -161,10 +161,14 @@ export default function RemindersModal({ visible, onClose }) {
     }
 
     try {
+      const scheduledDate = new Date(date);
+      scheduledDate.setSeconds(0);
+      scheduledDate.setMilliseconds(0);
+
       const reminderData = {
         title,
         description,
-        date: date.toISOString(),
+        date: scheduledDate.toISOString(),
         snoozeMinutes,
       };
 

@@ -4,7 +4,7 @@ import { Platform } from "react-native";
 import Constants from "expo-constants";
 
 const STORAGE_KEY = "@ummat_calendar_reminders";
-const CHANNEL_ID = "ummat_reminders_v2";
+const CHANNEL_ID = "ummat_reminders_v6";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -88,6 +88,8 @@ export const ReminderService = {
       }
 
       const triggerDate = new Date(reminder.date);
+      const now = new Date();
+
       const id = Date.now();
 
       const notificationId = await Notifications.scheduleNotificationAsync({
@@ -197,14 +199,12 @@ export const ReminderService = {
     }
   },
   async snoozeReminder(originalContent, oldNotificationId) {
-    console.log("Snoozing reminder...", originalContent.title);
     try {
       const { title, body, data } = originalContent;
       const snoozeMinutes =
         data && data.snoozeMinutes ? data.snoozeMinutes : 10;
 
       const triggerDate = new Date(Date.now() + snoozeMinutes * 60 * 1000);
-      console.log("Scheduling snoozed notification for:", triggerDate);
 
       const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
@@ -219,7 +219,6 @@ export const ReminderService = {
           channelId: CHANNEL_ID,
         },
       });
-      console.log("Snooze scheduled successfully");
 
       if (data && data.id) {
         try {
@@ -241,7 +240,6 @@ export const ReminderService = {
               STORAGE_KEY,
               JSON.stringify(currentReminders)
             );
-            console.log("Updated snoozed reminder in storage");
           }
         } catch (storageError) {
           console.error("Error updating storage for snooze", storageError);
@@ -256,10 +254,8 @@ export const ReminderService = {
   },
 
   async rescheduleAllReminders() {
-    console.log("Rescheduling all reminders to clean up ghosts...");
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
-      console.log("Cancelled all existing notifications.");
 
       const currentReminders = await this.getReminders();
       const now = new Date();
@@ -301,7 +297,6 @@ export const ReminderService = {
       }
 
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedReminders));
-      console.log(`Rescheduled ${rescheduledCount} active reminders.`);
       return true;
     } catch (e) {
       console.error("Error rescheduling reminders", e);
@@ -315,11 +310,8 @@ export const ReminderService = {
       const content = response.notification.request.content;
       const notificationId = response.notification.request.identifier;
 
-      console.log(`Notification action received: ${actionIdentifier}`);
-
       try {
         await Notifications.dismissNotificationAsync(notificationId);
-        console.log(`Notification ${notificationId} dismissed`);
       } catch (err) {
         console.warn("Failed to dismiss notification:", err);
       }
@@ -327,7 +319,6 @@ export const ReminderService = {
       if (actionIdentifier === "SNOOZE") {
         await this.snoozeReminder(content, notificationId);
       } else if (actionIdentifier === "DISMISS") {
-        console.log("Notification dismissed via OK button");
       }
     });
 

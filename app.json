@@ -21,7 +21,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.khanr7433.ummatcalendar"
+      "package": "com.khanr7433.ummatcalendar",
+      "permissions": ["SCHEDULE_EXACT_ALARM", "USE_EXACT_ALARM", "WAKE_LOCK"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
