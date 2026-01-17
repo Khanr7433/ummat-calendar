@@ -32,9 +32,16 @@ export default function PrivacyView({ onBack }) {
 
         <Text style={styles.sectionTitle}>Permissions</Text>
         <Text style={styles.paragraph}>
-          The app requires minimal permissions to function correctly. We do not
-          access your contacts, files, or location unless explicitly required
-          for a feature and approved by you.
+          The app requires minimal permissions to function correctly.
+        </Text>
+        <Text style={styles.paragraph}>
+          **Notifications**: We request permission to send notifications solely
+          to provide the reminders you schedule. These are managed locally on
+          your device.
+        </Text>
+        <Text style={styles.paragraph}>
+          We do not access your contacts, files, or location unless explicitly
+          required for a feature and approved by you.
         </Text>
 
         <Text style={styles.sectionTitle}>Contact</Text>
