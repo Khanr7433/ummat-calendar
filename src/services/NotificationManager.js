@@ -27,13 +27,13 @@ class NotificationManager {
           {
             name: REMINDER_CONFIG.CHANNEL_NAME,
             ...REMINDER_CONFIG.CHANNEL_SETTINGS,
-          }
+          },
         );
       }
 
       await Notifications.setNotificationCategoryAsync(
         REMINDER_CONFIG.ACTION_CATEGORY,
-        REMINDER_CONFIG.ACTIONS
+        REMINDER_CONFIG.ACTIONS,
       );
 
       const { status: existingStatus } =
@@ -48,27 +48,38 @@ class NotificationManager {
       return finalStatus === "granted";
     } catch (error) {
       console.warn("Notification permissions warning:", error);
-      if (Constants.appOwnership === "expo") {
-        return true;
-      }
       return false;
     }
   }
 
   async schedule(title, body, triggerDate, data = {}) {
-    return await Notifications.scheduleNotificationAsync({
-      content: {
-        title,
-        body,
-        data,
-        categoryIdentifier: REMINDER_CONFIG.ACTION_CATEGORY,
-      },
-      trigger: {
+    try {
+      const trigger = {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: triggerDate,
+        date: triggerDate, // Ensure this is a Date object
         channelId: REMINDER_CONFIG.CHANNEL_ID,
-      },
-    });
+      };
+
+      console.log("[NotificationManager] Scheduling:", {
+        title,
+        triggerDate: triggerDate.toISOString(),
+      });
+
+      return await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+          data,
+          categoryIdentifier: REMINDER_CONFIG.ACTION_CATEGORY,
+        },
+        trigger,
+      });
+    } catch (error) {
+      console.error("[NotificationManager] Schedule Failed:", error);
+      throw new Error(
+        `Failed to schedule: ${error.message || "Unknown error"}`,
+      );
+    }
   }
 
   async cancel(notificationId) {

@@ -44,7 +44,7 @@ export default function RemindersModal({ visible, onClose }) {
 
     const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
-      backAction
+      backAction,
     );
 
     return () => backHandler.remove();
@@ -86,7 +86,7 @@ export default function RemindersModal({ visible, onClose }) {
             style: "destructive",
             onPress: resetForm,
           },
-        ]
+        ],
       );
     } else {
       resetForm();
@@ -115,7 +115,7 @@ export default function RemindersModal({ visible, onClose }) {
       resetForm();
       loadReminders();
     } catch (error) {
-      Alert.alert("Error", "Failed to save reminder");
+      Alert.alert("Error", error.message || "Failed to save reminder");
     }
   };
 
@@ -133,7 +133,7 @@ export default function RemindersModal({ visible, onClose }) {
             loadReminders();
           },
         },
-      ]
+      ],
     );
   };
 
