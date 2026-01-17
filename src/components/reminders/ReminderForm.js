@@ -123,7 +123,9 @@ export default function ReminderForm({
             </View>
             <View>
               <Text style={styles.cardLabel}>Date</Text>
-              <Text style={styles.cardValue}>{date.toLocaleDateString()}</Text>
+              <Text style={styles.cardValue}>
+                {date.toLocaleDateString("en-GB")}
+              </Text>
             </View>
           </TouchableOpacity>
 

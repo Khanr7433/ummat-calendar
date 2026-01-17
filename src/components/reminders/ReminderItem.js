@@ -38,9 +38,10 @@ export default function ReminderItem({ item, onEdit, onDelete }) {
           <View style={styles.timeTag}>
             <Ionicons name="time" size={12} color={COLORS.textSecondary} />
             <Text style={styles.timeText}>
-              {new Date(item.date).toLocaleString([], {
-                month: "short",
-                day: "numeric",
+              {new Date(item.date).toLocaleString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
                 hour: "2-digit",
                 minute: "2-digit",
               })}
