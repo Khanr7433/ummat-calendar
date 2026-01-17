@@ -30,9 +30,9 @@ export const ReminderService = {
         reminder.description,
         triggerDate,
         {
-          id: id,
+          id: id.toString(),
           snoozeMinutes: reminder.snoozeMinutes || 10,
-        }
+        },
       );
 
       const newReminder = {
@@ -56,7 +56,7 @@ export const ReminderService = {
     try {
       const currentReminders = await this.getReminders();
       const oldReminderIndex = currentReminders.findIndex(
-        (r) => r.id === reminder.id
+        (r) => r.id === reminder.id,
       );
 
       if (oldReminderIndex === -1) {
@@ -74,9 +74,9 @@ export const ReminderService = {
         reminder.description,
         triggerDate,
         {
-          id: Date.now(),
+          id: Date.now().toString(),
           snoozeMinutes: reminder.snoozeMinutes || 10,
-        }
+        },
       );
 
       const updatedReminder = {
@@ -126,7 +126,7 @@ export const ReminderService = {
         `${title} (Snoozed)`,
         body,
         triggerDate,
-        { ...data }
+        { ...data },
       );
 
       if (data && data.id) {
@@ -136,7 +136,7 @@ export const ReminderService = {
             (r) =>
               r.id === data.id.toString() ||
               r.id === data.id ||
-              (oldNotificationId && r.notificationId === oldNotificationId)
+              (oldNotificationId && r.notificationId === oldNotificationId),
           );
 
           if (reminderIndex !== -1) {
@@ -147,7 +147,7 @@ export const ReminderService = {
             };
             await AsyncStorage.setItem(
               STORAGE_KEY,
-              JSON.stringify(currentReminders)
+              JSON.stringify(currentReminders),
             );
           }
         } catch (storageError) {
@@ -179,9 +179,9 @@ export const ReminderService = {
             reminder.description,
             triggerDate,
             {
-              id: reminder.id,
+              id: reminder.id.toString(),
               snoozeMinutes: reminder.snoozeMinutes || 10,
-            }
+            },
           );
 
           updatedReminders.push({

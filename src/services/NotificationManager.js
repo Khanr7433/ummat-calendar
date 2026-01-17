@@ -56,13 +56,14 @@ class NotificationManager {
     try {
       const trigger = {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: triggerDate, // Ensure this is a Date object
+        date: triggerDate.getTime(),
         channelId: REMINDER_CONFIG.CHANNEL_ID,
       };
 
       console.log("[NotificationManager] Scheduling:", {
         title,
         triggerDate: triggerDate.toISOString(),
+        timestamp: trigger.date,
       });
 
       return await Notifications.scheduleNotificationAsync({
@@ -76,9 +77,12 @@ class NotificationManager {
       });
     } catch (error) {
       console.error("[NotificationManager] Schedule Failed:", error);
-      throw new Error(
-        `Failed to schedule: ${error.message || "Unknown error"}`,
-      );
+      const errorMsg =
+        typeof error === "object"
+          ? JSON.stringify(error, Object.getOwnPropertyNames(error))
+          : String(error);
+
+      throw new Error(`Failed to schedule: ${errorMsg}`);
     }
   }
 
