@@ -1,75 +1,10 @@
-import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
-import Constants from "expo-constants";
+import NotificationManager from "./NotificationManager";
+import { REMINDER_CONFIG } from "../constants/reminderConfig";
 
-const STORAGE_KEY = "@ummat_calendar_reminders";
-const CHANNEL_ID = "ummat_reminders_v6";
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+const { STORAGE_KEY } = REMINDER_CONFIG;
 
 export const ReminderService = {
-  async requestPermissions() {
-    try {
-      if (Platform.OS === "android") {
-        await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-          name: "Calendar Alarms",
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 500, 200, 500],
-          lightColor: "#FF231F7C",
-          lockscreenVisibility:
-            Notifications.AndroidNotificationVisibility.PUBLIC,
-          audioAttributes: {
-            usage: Notifications.AndroidAudioUsage.ALARM,
-            contentType: Notifications.AndroidAudioContentType.SONIFICATION,
-          },
-        });
-      }
-
-      await Notifications.setNotificationCategoryAsync("alarm-actions", [
-        {
-          identifier: "DISMISS",
-          buttonTitle: "OK",
-          options: {
-            isDestructive: true,
-            opensAppToForeground: false,
-          },
-        },
-        {
-          identifier: "SNOOZE",
-          buttonTitle: "Remind again",
-          options: {
-            opensAppToForeground: false,
-          },
-        },
-      ]);
-
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      return finalStatus === "granted";
-    } catch (error) {
-      console.warn("Notification permissions warning:", error);
-      if (Constants.appOwnership === "expo") {
-        return true;
-      }
-      return false;
-    }
-  },
-
   async getReminders() {
     try {
       const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
@@ -82,32 +17,23 @@ export const ReminderService = {
 
   async addReminder(reminder) {
     try {
-      const hasPermission = await this.requestPermissions();
+      const hasPermission = await NotificationManager.requestPermissions();
       if (!hasPermission) {
         throw new Error("Notification permissions not granted");
       }
 
       const triggerDate = new Date(reminder.date);
-      const now = new Date();
-
       const id = Date.now();
 
-      const notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: reminder.title,
-          body: reminder.description,
-          data: {
-            id: id,
-            snoozeMinutes: reminder.snoozeMinutes || 10,
-          },
-          categoryIdentifier: "alarm-actions",
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.DATE,
-          date: triggerDate,
-          channelId: CHANNEL_ID,
-        },
-      });
+      const notificationId = await NotificationManager.schedule(
+        reminder.title,
+        reminder.description,
+        triggerDate,
+        {
+          id: id,
+          snoozeMinutes: reminder.snoozeMinutes || 10,
+        }
+      );
 
       const newReminder = {
         id: id.toString(),
@@ -139,28 +65,19 @@ export const ReminderService = {
 
       const oldReminder = currentReminders[oldReminderIndex];
       if (oldReminder.notificationId) {
-        await Notifications.cancelScheduledNotificationAsync(
-          oldReminder.notificationId
-        );
+        await NotificationManager.cancel(oldReminder.notificationId);
       }
 
       const triggerDate = new Date(reminder.date);
-      const notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: reminder.title,
-          body: reminder.description,
-          data: {
-            id: Date.now(),
-            snoozeMinutes: reminder.snoozeMinutes || 10,
-          },
-          categoryIdentifier: "alarm-actions",
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.DATE,
-          date: triggerDate,
-          channelId: CHANNEL_ID,
-        },
-      });
+      const notificationId = await NotificationManager.schedule(
+        reminder.title,
+        reminder.description,
+        triggerDate,
+        {
+          id: Date.now(),
+          snoozeMinutes: reminder.snoozeMinutes || 10,
+        }
+      );
 
       const updatedReminder = {
         ...reminder,
@@ -185,9 +102,7 @@ export const ReminderService = {
       const reminderToDelete = currentReminders.find((r) => r.id === id);
 
       if (reminderToDelete && reminderToDelete.notificationId) {
-        await Notifications.cancelScheduledNotificationAsync(
-          reminderToDelete.notificationId
-        );
+        await NotificationManager.cancel(reminderToDelete.notificationId);
       }
 
       const updatedReminders = currentReminders.filter((r) => r.id !== id);
@@ -198,6 +113,7 @@ export const ReminderService = {
       return false;
     }
   },
+
   async snoozeReminder(originalContent, oldNotificationId) {
     try {
       const { title, body, data } = originalContent;
@@ -206,19 +122,12 @@ export const ReminderService = {
 
       const triggerDate = new Date(Date.now() + snoozeMinutes * 60 * 1000);
 
-      const notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: `${title} (Snoozed)`,
-          body,
-          data: { ...data },
-          categoryIdentifier: "alarm-actions",
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.DATE,
-          date: triggerDate,
-          channelId: CHANNEL_ID,
-        },
-      });
+      const notificationId = await NotificationManager.schedule(
+        `${title} (Snoozed)`,
+        body,
+        triggerDate,
+        { ...data }
+      );
 
       if (data && data.id) {
         try {
@@ -255,39 +164,30 @@ export const ReminderService = {
 
   async rescheduleAllReminders() {
     try {
-      await Notifications.cancelAllScheduledNotificationsAsync();
+      await NotificationManager.cancelAll();
 
       const currentReminders = await this.getReminders();
       const now = new Date();
       const updatedReminders = [];
-      let rescheduledCount = 0;
 
       for (const reminder of currentReminders) {
         const triggerDate = new Date(reminder.date);
 
         if (triggerDate > now) {
-          const notificationId = await Notifications.scheduleNotificationAsync({
-            content: {
-              title: reminder.title,
-              body: reminder.description,
-              data: {
-                id: reminder.id,
-                snoozeMinutes: reminder.snoozeMinutes || 10,
-              },
-              categoryIdentifier: "alarm-actions",
-            },
-            trigger: {
-              type: Notifications.SchedulableTriggerInputTypes.DATE,
-              date: triggerDate,
-              channelId: CHANNEL_ID,
-            },
-          });
+          const notificationId = await NotificationManager.schedule(
+            reminder.title,
+            reminder.description,
+            triggerDate,
+            {
+              id: reminder.id,
+              snoozeMinutes: reminder.snoozeMinutes || 10,
+            }
+          );
 
           updatedReminders.push({
             ...reminder,
             notificationId: notificationId,
           });
-          rescheduledCount++;
         } else {
           updatedReminders.push({
             ...reminder,
@@ -305,30 +205,23 @@ export const ReminderService = {
   },
 
   initialize() {
-    Notifications.addNotificationResponseReceivedListener(async (response) => {
+    NotificationManager.addResponseListener(async (response) => {
       const actionIdentifier = response.actionIdentifier;
       const content = response.notification.request.content;
       const notificationId = response.notification.request.identifier;
 
       try {
-        await Notifications.dismissNotificationAsync(notificationId);
+        await NotificationManager.dismiss(notificationId);
       } catch (err) {
         console.warn("Failed to dismiss notification:", err);
       }
 
       if (actionIdentifier === "SNOOZE") {
         await this.snoozeReminder(content, notificationId);
-      } else if (actionIdentifier === "DISMISS") {
       }
     });
 
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowBanner: true,
-        shouldShowList: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-      }),
-    });
+    // Ensure permissions are requested/channels set up on init
+    NotificationManager.requestPermissions();
   },
 };

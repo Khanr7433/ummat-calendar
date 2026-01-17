@@ -23,13 +23,13 @@ const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
 
   const imageStyle = useMemo(
     () => [
-      styles.staticImage,
+      styles.image,
       {
-        width: width - LAYOUT.spacing.s,
+        width: width - LAYOUT.spacing.m, // More breathing room
         height: LAYOUT.calendarItem.fullImageHeightPercentage,
       },
       isSmallDevice && {
-        width: width - 20,
+        width: width - 24, // Consistent padding
         height: LAYOUT.calendarItem.reducedImageHeightPercentage,
         marginTop: LAYOUT.calendarItem.smallDeviceMarginTop,
       },
@@ -41,7 +41,7 @@ const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
   return (
     <View style={containerStyle}>
       <ReactNativeZoomableView
-        maxZoom={2}
+        maxZoom={3} // Increased zoom for better readability
         minZoom={1}
         zoomStep={0.5}
         initialZoom={1}
@@ -54,29 +54,32 @@ const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
             onZoomChange(true);
           }
         }}
+        movementSensibility={1.3} // Smoother panning
       >
-        {loading && (
-          <ActivityIndicator
-            size="large"
-            color={COLORS.black}
-            style={styles.loader}
+        <View style={styles.cardContainer}>
+          {loading && (
+            <ActivityIndicator
+              size="large"
+              color={COLORS.primary}
+              style={styles.loader}
+            />
+          )}
+          <Image
+            source={showBack ? item.backImage : item.frontImage}
+            style={imageStyle}
+            contentFit="contain"
+            quality={100}
+            cachePolicy="disk"
+            onLoad={(e) => {
+              setLoading(false);
+              const { width, height } = e.source;
+              if (width && height) {
+                setAspectRatio(width / height);
+              }
+            }}
+            onError={() => setLoading(false)}
           />
-        )}
-        <Image
-          source={showBack ? item.backImage : item.frontImage}
-          style={imageStyle}
-          contentFit="contain"
-          quality={100}
-          cachePolicy="disk"
-          onLoad={(e) => {
-            setLoading(false);
-            const { width, height } = e.source;
-            if (width && height) {
-              setAspectRatio(width / height);
-            }
-          }}
-          onError={() => setLoading(false)}
-        />
+        </View>
       </ReactNativeZoomableView>
     </View>
   );
@@ -89,13 +92,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  cardContainer: {
+    // Premium Card Look
+    backgroundColor: COLORS.white,
+    borderRadius: 0, // No radius as requested
+
+    // Soft Shadow (All Sides)
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 0 }, // Center shadow
+    shadowOpacity: 0.25, // Slightly stronger opacity
+    shadowRadius: 20, // Larger radius to spread out
+    elevation: 10, // Higher elevation for Android
+
+    overflow: "visible",
+    padding: 0,
+  },
   loader: {
     position: "absolute",
-    zIndex: 1,
+    top: "50%",
+    left: "50%",
+    zIndex: 10,
+    marginTop: -15, // Half of size "large" roughly
+    marginLeft: -15,
   },
-  staticImage: {
-    borderWidth: 1,
-    borderColor: COLORS.black,
+  image: {
+    borderRadius: 0,
   },
 });
 

@@ -6,126 +6,100 @@ import {
   TouchableOpacity,
   Image,
   Linking,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TOPOGRAPHY } from "../constants/typography";
+import { COLORS } from "../constants/colors";
 
 export default function MenuView({ onAboutPress, onPrivacyPress }) {
-  const handleYouTubePress = () => {
-    Linking.openURL("https://www.youtube.com/@MadrasaBaitulUloomPune");
-  };
+  const socialLinks = [
+    {
+      icon: "logo-youtube",
+      color: "#FF0000",
+      url: "https://www.youtube.com/@MadrasaBaitulUloomPune",
+    },
+    {
+      icon: "logo-instagram",
+      color: "#E1306C",
+      url: "https://www.instagram.com/baitul_uloom_kondhwa_pune/",
+    },
+    {
+      icon: "paper-plane",
+      color: "#0088CC",
+      url: "https://t.me/mbupofficial",
+    },
+    {
+      icon: "logo-facebook",
+      color: "#1877F2",
+      url: "https://facebook.com/baitul.uloom.1",
+    },
+    {
+      icon: "logo-twitter",
+      color: "#1DA1F2",
+      url: "https://twitter.com/BaitulUloom2003",
+    },
+    {
+      icon: "logo-whatsapp",
+      color: "#25D366",
+      url: "https://chat.whatsapp.com/KMXlF6CoOme4yBa15mHgMC",
+    },
+  ];
 
-  const handleInstagramPress = () => {
-    Linking.openURL("https://www.instagram.com/baitul_uloom_kondhwa_pune/");
-  };
-
-  const handleTelegramPress = () => {
-    Linking.openURL("https://t.me/mbupofficial");
-  };
-
-  const handleFacebookPress = () => {
-    Linking.openURL("https://facebook.com/baitul.uloom.1");
-  };
-
-  const handleTwitterPress = () => {
-    Linking.openURL("https://twitter.com/BaitulUloom2003");
-  };
-
-  const handleWhatsAppPress = () => {
-    Linking.openURL("https://chat.whatsapp.com/KMXlF6CoOme4yBa15mHgMC");
-  };
-
-  const handleEmailPress = () => {
-    Linking.openURL("mailto:baitululoompune@gmail.com");
-  };
+  const handleLink = (url) => Linking.openURL(url);
 
   return (
-    <View style={styles.menuContainer}>
-      <View style={styles.brandingContainer}>
-        <Image
-          source={require("../../assets/icon.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 40 }}
+    >
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../assets/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
         <Text style={styles.appName}>Ummat Calendar</Text>
-        <Text style={styles.appVersion}>Version 1.0.0</Text>
+        <Text style={styles.version}>Version 1.0.0</Text>
       </View>
 
-      <View style={styles.menuItems}>
-        <TouchableOpacity style={styles.menuItem} onPress={onAboutPress}>
-          <View style={styles.menuItemLeft}>
-            <Ionicons
-              name="information-circle-outline"
-              size={22}
-              color="#2c3e50"
-            />
-            <Text style={styles.menuItemText}>About Us</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#bdc3c7" />
-        </TouchableOpacity>
+      <Text style={styles.sectionTitle}>GENERAL</Text>
+      <View style={styles.menuGroup}>
+        <MenuItem
+          icon="information-circle-outline"
+          label="About Us"
+          onPress={onAboutPress}
+        />
+        <View style={styles.separator} />
+        <MenuItem
+          icon="shield-checkmark-outline"
+          label="Privacy Policy"
+          onPress={onPrivacyPress}
+        />
+        <View style={styles.separator} />
+        <MenuItem
+          icon="mail-outline"
+          label="Contact Us"
+          onPress={() => handleLink("mailto:baitululoompune@gmail.com")}
+          iconColor={COLORS.primary}
+        />
+      </View>
 
-        <TouchableOpacity style={styles.menuItem} onPress={onPrivacyPress}>
-          <View style={styles.menuItemLeft}>
-            <Ionicons name="lock-closed-outline" size={22} color="#2c3e50" />
-            <Text style={styles.menuItemText}>Privacy Policy</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#bdc3c7" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem} onPress={handleEmailPress}>
-          <View style={styles.menuItemLeft}>
-            <Ionicons name="mail-outline" size={22} color="#EA4335" />
-            <Text style={styles.menuItemText}>Contact via Email</Text>
-          </View>
-          <Ionicons name="open-outline" size={20} color="#bdc3c7" />
-        </TouchableOpacity>
-
-        <View style={styles.socialSection}>
-          <Text style={styles.socialTitle}>Follow Us</Text>
-          <View style={styles.socialRow}>
-            <TouchableOpacity
-              style={styles.socialIconButton}
-              onPress={handleYouTubePress}
-            >
-              <Ionicons name="logo-youtube" size={28} color="#e74c3c" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.socialIconButton}
-              onPress={handleInstagramPress}
-            >
-              <Ionicons name="logo-instagram" size={28} color="#E1306C" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.socialIconButton}
-              onPress={handleTelegramPress}
-            >
-              <Ionicons name="paper-plane" size={28} color="#0088cc" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.socialIconButton}
-              onPress={handleFacebookPress}
-            >
-              <Ionicons name="logo-facebook" size={28} color="#1877F2" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.socialIconButton}
-              onPress={handleTwitterPress}
-            >
-              <Ionicons name="logo-twitter" size={28} color="#1DA1F2" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.socialIconButton}
-              onPress={handleWhatsAppPress}
-            >
-              <Ionicons name="logo-whatsapp" size={28} color="#25D366" />
-            </TouchableOpacity>
-          </View>
-        </View>
+      <Text style={styles.sectionTitle}>SUPPORT US</Text>
+      <View style={styles.socialGrid}>
+        {socialLinks.map((social, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.socialCard}
+            onPress={() => handleLink(social.url)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name={social.icon} size={28} color={social.color} />
+          </TouchableOpacity>
+        ))}
       </View>
 
       <View style={styles.footer}>
@@ -133,110 +107,141 @@ export default function MenuView({ onAboutPress, onPrivacyPress }) {
           © {new Date().getFullYear()} Ummat Calendar
         </Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
+const MenuItem = ({ icon, label, onPress, iconColor }) => (
+  <TouchableOpacity
+    style={styles.menuItem}
+    onPress={onPress}
+    activeOpacity={0.7}
+  >
+    <View style={styles.menuItemContent}>
+      <View style={[styles.iconBox, { backgroundColor: COLORS.background }]}>
+        <Ionicons
+          name={icon}
+          size={20}
+          color={iconColor || COLORS.textPrimary}
+        />
+      </View>
+      <Text style={styles.menuLabel}>{label}</Text>
+    </View>
+    <Ionicons name="chevron-forward" size={16} color={COLORS.textTertiary} />
+  </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
-  menuContainer: {
+  container: {
     flex: 1,
+    backgroundColor: COLORS.background, // Light Grey bg
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-    backgroundColor: "#fff",
   },
-  brandingContainer: {
+  header: {
     alignItems: "center",
-    marginBottom: 24,
-    marginTop: 10,
+    marginVertical: 32,
+  },
+  logoContainer: {
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+    backgroundColor: "white",
+    borderRadius: 24,
+    padding: 10,
+    marginBottom: 16,
   },
   logo: {
-    width: 150,
-    height: 150,
-    marginBottom: 12,
+    width: 80,
+    height: 80,
   },
   appName: {
-    ...TOPOGRAPHY.h1,
-    fontSize: 22,
+    ...TOPOGRAPHY.h2,
     marginBottom: 4,
   },
-  appVersion: {
+  version: {
     ...TOPOGRAPHY.caption,
-    fontSize: 13,
-    letterSpacing: 0.5,
+    fontSize: 14,
   },
-  menuItems: {
-    backgroundColor: "#fff",
+
+  sectionTitle: {
+    ...TOPOGRAPHY.sectionHeader,
+    marginBottom: 12,
+    marginLeft: 4,
+  },
+  menuGroup: {
+    backgroundColor: COLORS.white,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3.84,
-    elevation: 2,
-    marginBottom: 20,
     overflow: "hidden",
+    marginBottom: 32,
+
+    // IOS Shadow
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f8f9fa",
+    backgroundColor: COLORS.white,
   },
-  menuItemLeft: {
+  menuItemContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 12,
   },
-  menuItemText: {
+  iconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  menuLabel: {
     ...TOPOGRAPHY.body,
     fontWeight: "500",
   },
-  footer: {
-    marginTop: "auto",
+  separator: {
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginLeft: 64, // Indented separator
+  },
+
+  socialGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    justifyContent: "center",
+    marginBottom: 32,
+  },
+  socialCard: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: COLORS.white,
+    justifyContent: "center",
     alignItems: "center",
-    paddingBottom: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+
+  footer: {
+    alignItems: "center",
+    marginTop: "auto",
   },
   footerText: {
     ...TOPOGRAPHY.caption,
-    color: "#bdc3c7",
-  },
-  socialSection: {
-    marginTop: 8,
-    backgroundColor: "#fafafa",
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 10,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-  },
-  socialTitle: {
-    ...TOPOGRAPHY.sectionHeader,
-    marginBottom: 12,
-  },
-  socialRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    width: "100%",
-  },
-  socialIconButton: {
-    padding: 8,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
 });

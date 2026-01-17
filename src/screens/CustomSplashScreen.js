@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, Image, Animated, Easing, StyleSheet } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
+import { COLORS } from "../constants/colors";
+import { TOPOGRAPHY } from "../constants/typography";
 
 SplashScreen.preventAutoHideAsync({
   fade: true,
@@ -40,7 +42,7 @@ export default function CustomSplashScreen({ onFinish }) {
           }),
         ]).start();
 
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 4000));
       } catch (e) {
         console.warn(e);
       } finally {
@@ -77,15 +79,13 @@ export default function CustomSplashScreen({ onFinish }) {
         }}
       >
         <Text style={styles.splashTextTitle}>UMMAT CALENDAR</Text>
+        <View style={styles.divider} />
         <Text style={styles.splashTextSubtitle}>
-          BY:{" "}
+          BY{"\n"}
           <Text style={styles.splashTextSubtitleBold}>
             MADRASA BAITUL ULOOM
           </Text>
-          {"\n"}
-          <Text style={styles.splashTextSubtitleBold}>
-            KONDHWA, PUNE, 411048
-          </Text>
+          {"\n"}KONDHWA, PUNE-48
         </Text>
       </Animated.View>
     </View>
@@ -97,30 +97,39 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.white,
   },
   splashImage: {
-    width: 200,
-    height: 200,
-    marginBottom: 20,
+    width: 180,
+    height: 180,
+    marginBottom: 32,
   },
   splashTextTitle: {
     fontSize: 28,
     fontWeight: "800",
-    color: "#2c3e50",
-    marginBottom: 12,
+    color: COLORS.primary, // Using Brand Color
+    marginBottom: 16,
     textAlign: "center",
-    letterSpacing: 1.2,
+    letterSpacing: 1,
+  },
+  divider: {
+    width: 40,
+    height: 4,
+    backgroundColor: COLORS.secondary, // Subtle divider
+    borderRadius: 2,
+    marginBottom: 16,
   },
   splashTextSubtitle: {
-    fontSize: 15,
-    color: "#95a5a6",
+    fontSize: 13,
+    color: COLORS.textSecondary,
     fontWeight: "600",
     textAlign: "center",
     letterSpacing: 2,
+    lineHeight: 20,
     textTransform: "uppercase",
   },
   splashTextSubtitleBold: {
-    fontWeight: "bold",
+    fontWeight: "800",
+    color: COLORS.textPrimary,
   },
 });

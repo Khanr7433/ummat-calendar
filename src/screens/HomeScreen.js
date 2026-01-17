@@ -11,6 +11,7 @@ import calendarData from "../data/calendarData";
 import CalendarItem from "../components/CalendarItem";
 import MonthSelectorModal from "../components/MonthSelectorModal";
 import Header from "../components/Header";
+import BottomNav from "../components/BottomNav";
 import SettingsModal from "../components/SettingsModal";
 import RemindersModal from "../components/RemindersModal";
 import { ReminderService } from "../services/ReminderService";
@@ -101,37 +102,42 @@ export default function HomeScreen() {
         onFlipToggle={handleFlipToggle}
         hasBackImage={hasBackImage}
         topInset={insets.top}
-        onSettingsPress={handleSettingsPress}
-        onRemindersPress={handleRemindersPress}
       />
 
-      <FlatList
-        ref={flatListRef}
-        data={calendarData}
-        scrollEnabled={isScrollEnabled}
-        style={[styles.flatList, { marginTop: insets.bottom }]}
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: "center",
-        }}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        initialScrollIndex={initialMonthIndex}
-        initialNumToRender={3}
-        maxToRenderPerBatch={5}
-        windowSize={5}
-        removeClippedSubviews={true}
-        keyExtractor={keyExtractor}
-        extraData={showBack}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        getItemLayout={(data, index) => ({
-          length: width,
-          offset: width * index,
-          index,
-        })}
-        renderItem={renderItem}
+      <View style={styles.contentContainer}>
+        <FlatList
+          ref={flatListRef}
+          data={calendarData}
+          scrollEnabled={isScrollEnabled}
+          style={styles.flatList}
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+          }}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          initialScrollIndex={initialMonthIndex}
+          initialNumToRender={3}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={true}
+          keyExtractor={keyExtractor}
+          extraData={showBack}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          getItemLayout={(data, index) => ({
+            length: width,
+            offset: width * index,
+            index,
+          })}
+          renderItem={renderItem}
+        />
+      </View>
+
+      <BottomNav
+        onSettingsPress={handleSettingsPress}
+        onRemindersPress={handleRemindersPress}
       />
 
       <MonthSelectorModal
@@ -159,6 +165,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  contentContainer: {
+    flex: 1,
+    position: "relative",
   },
   flatList: {
     flex: 1,

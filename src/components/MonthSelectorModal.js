@@ -5,8 +5,11 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  SafeAreaView,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { TOPOGRAPHY } from "../constants/typography";
+import { COLORS } from "../constants/colors";
 
 const MonthSelectorModal = ({
   visible,
@@ -22,20 +25,25 @@ const MonthSelectorModal = ({
       visible={visible}
       onRequestClose={onClose}
     >
-      <TouchableOpacity
-        style={styles.modalOverlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
+      <View style={styles.overlay}>
         <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          onPress={onClose}
           activeOpacity={1}
-          onPress={() => {}}
-          style={styles.modalContent}
-        >
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Month</Text>
-            <TouchableOpacity style={styles.closeIcon} onPress={onClose}>
-              <Text style={styles.closeIconText}>✕</Text>
+        />
+
+        <View style={styles.modalContent}>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.title}>Jump to Month</Text>
+              <Text style={styles.subtitle}>Select a month to view</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+              hitSlop={12}
+            >
+              <Ionicons name="close" size={24} color={COLORS.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -44,96 +52,121 @@ const MonthSelectorModal = ({
             numColumns={2}
             key={2}
             columnWrapperStyle={styles.columnWrapper}
+            contentContainerStyle={styles.listContent}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item, index }) => (
-              <TouchableOpacity
-                style={[
-                  styles.modalGridItem,
-                  index === currentMonthIndex && styles.selectedGridItem,
-                ]}
-                onPress={() => onSelectMonth(index)}
-              >
-                <Text
+            renderItem={({ item, index }) => {
+              const isSelected = index === currentMonthIndex;
+              return (
+                <TouchableOpacity
                   style={[
-                    styles.modalGridItemText,
-                    index === currentMonthIndex && styles.selectedGridItemText,
+                    styles.gridItem,
+                    isSelected && styles.gridItemSelected,
                   ]}
+                  onPress={() => onSelectMonth(index)}
+                  activeOpacity={0.7}
                 >
-                  {item.monthName}
-                </Text>
-              </TouchableOpacity>
-            )}
-            showsVerticalScrollIndicator={true}
-            persistentScrollbar={true}
+                  <Text
+                    style={[
+                      styles.gridItemText,
+                      isSelected && styles.gridItemTextSelected,
+                    ]}
+                  >
+                    {item.monthName}
+                  </Text>
+                  {isSelected && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={18}
+                      color={COLORS.white}
+                      style={styles.checkIcon}
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            }}
+            showsVerticalScrollIndicator={false}
           />
-        </TouchableOpacity>
-      </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
+  overlay: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: "rgba(0,0,0,0.5)", // Darker, cleaner dim
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
   },
   modalContent: {
-    width: "90%",
-    backgroundColor: "white",
-    borderRadius: 24,
+    width: "100%",
+    maxWidth: 400,
+    backgroundColor: COLORS.surface,
+    borderRadius: 28,
     padding: 24,
-    maxHeight: "70%",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 10,
+    maxHeight: "80%",
+
+    // Elevation (Android) & Shadow (iOS)
+    elevation: 8,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
   },
-  modalHeader: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 24,
   },
-  modalTitle: {
-    ...TOPOGRAPHY.h1,
-    color: "#1a252f",
+  title: {
+    ...TOPOGRAPHY.h2,
+    marginBottom: 4,
   },
-  closeIcon: {
+  subtitle: {
+    ...TOPOGRAPHY.bodySecondary,
+  },
+  closeButton: {
     padding: 8,
+    backgroundColor: COLORS.background,
+    borderRadius: 20,
   },
-  closeIconText: {
-    fontSize: 20,
-    color: "#95a5a6",
-    fontWeight: "bold",
+
+  listContent: {
+    paddingBottom: 8,
   },
   columnWrapper: {
-    justifyContent: "space-between",
-    marginBottom: 16,
+    gap: 12,
+    marginBottom: 12,
   },
-  modalGridItem: {
-    width: "48%",
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: "#f1f3f5",
+  gridItem: {
+    flex: 1,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: "transparent",
   },
-  selectedGridItem: {
-    backgroundColor: "#2c3e50",
+  gridItemSelected: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primaryDark,
   },
-  modalGridItemText: {
-    fontSize: 16,
+  gridItemText: {
+    fontSize: 15,
     fontWeight: "600",
-    color: "#7f8c8d",
+    color: COLORS.textPrimary,
   },
-  selectedGridItemText: {
-    color: "white",
+  gridItemTextSelected: {
+    color: COLORS.white,
+  },
+  checkIcon: {
+    marginLeft: 8,
   },
 });
 

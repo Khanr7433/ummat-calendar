@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TOPOGRAPHY } from "../constants/typography";
+import { COLORS } from "../constants/colors";
 
 function Header({
   monthName,
@@ -10,37 +11,33 @@ function Header({
   onFlipToggle,
   hasBackImage,
   topInset,
-  onSettingsPress,
-  onRemindersPress,
 }) {
   return (
-    <View style={[styles.header, { paddingTop: topInset + 8 }]}>
+    <View style={[styles.header, { paddingTop: topInset + 12 }]}>
       <TouchableOpacity
         style={styles.selectorButton}
         onPress={onSelectMonthPress}
+        activeOpacity={0.6}
       >
-        <Text style={styles.selectorText}>{monthName || "Select Month"} ▾</Text>
+        <Text style={styles.selectorText}>{monthName || "Select Month"}</Text>
+        <Ionicons name="chevron-down" size={18} color={COLORS.primary} />
       </TouchableOpacity>
 
       <View style={styles.rightContainer}>
-        <TouchableOpacity
-          onPress={onRemindersPress}
-          style={styles.settingsButton}
-        >
-          <Ionicons name="notifications-outline" size={24} color="#2c3e50" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={onSettingsPress}
-          style={styles.settingsButton}
-        >
-          <Ionicons name="settings-outline" size={24} color="#2c3e50" />
-        </TouchableOpacity>
-
         {hasBackImage && (
-          <TouchableOpacity style={styles.flipButton} onPress={onFlipToggle}>
+          <TouchableOpacity
+            style={styles.flipButton}
+            onPress={onFlipToggle}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={showBack ? "image-outline" : "repeat-outline"}
+              size={18}
+              color={COLORS.primary}
+              style={{ marginRight: 6 }}
+            />
             <Text style={styles.flipButtonText}>
-              {showBack ? "Show Front" : "Show Back"}
+              {showBack ? "Front" : "Back"}
             </Text>
           </TouchableOpacity>
         )}
@@ -55,66 +52,46 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.96)",
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 3,
+    borderBottomColor: COLORS.border,
     zIndex: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  settingsButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: "#f8f9fa",
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: "#e1e4e8",
-  },
+
   selectorButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: "#f8f9fa",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#e1e4e8",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   selectorText: {
-    ...TOPOGRAPHY.button,
-    color: "#2c3e50",
-    letterSpacing: 0.3,
+    ...TOPOGRAPHY.h3,
+    color: COLORS.textPrimary,
+    letterSpacing: -0.5,
   },
+
   rightContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   flipButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#f8f9fa",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#e1e4e8",
-    minWidth: 110,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: "#EEF2FF",
+    borderRadius: 24,
+    marginLeft: 8,
   },
   flipButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
-    color: "#2c3e50",
+    color: COLORS.primary,
   },
 });
 
