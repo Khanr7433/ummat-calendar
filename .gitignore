@@ -8,8 +8,10 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
+credentials/
 
 # Native
+credentials.json
 .kotlin/
 *.orig.*
 *.jks
