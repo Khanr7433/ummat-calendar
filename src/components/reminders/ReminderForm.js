@@ -9,12 +9,14 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { Ionicons } from "@expo/vector-icons";
 import { TOPOGRAPHY } from "../../constants/typography";
 import { COLORS } from "../../constants/colors";
+import { ALERT_TYPES } from "../../constants/reminderConfig";
 import AppButton from "../ui/AppButton";
 import AppInput from "../ui/AppInput";
+import DateTimeSection from "./DateTimeSection";
+import AlertsSection from "./AlertsSection";
+import SnoozeSection from "./SnoozeSection";
 
 export default function ReminderForm({
   initialData,
@@ -28,6 +30,8 @@ export default function ReminderForm({
   const [snoozeMinutes, setSnoozeMinutes] = useState(10);
   const [showPicker, setShowPicker] = useState(false);
   const [mode, setMode] = useState("date");
+  const [selectedAlerts, setSelectedAlerts] = useState([ALERT_TYPES.AT_TIME]);
+  const [customDays, setCustomDays] = useState("1");
 
   useEffect(() => {
     if (initialData) {
@@ -35,6 +39,17 @@ export default function ReminderForm({
       setDescription(initialData.description || "");
       setDate(new Date(initialData.date));
       setSnoozeMinutes(initialData.snoozeMinutes || 10);
+
+      // Parse initial alerts
+      let alerts = initialData.alerts || [ALERT_TYPES.AT_TIME];
+      setSelectedAlerts(alerts);
+
+      const customAlert = alerts.find((a) =>
+        a.startsWith(ALERT_TYPES.CUSTOM_PREFIX),
+      );
+      if (customAlert) {
+        setCustomDays(customAlert.split(":")[1]);
+      }
     }
   }, [initialData]);
 
@@ -44,7 +59,7 @@ export default function ReminderForm({
       const isDirty = checkIsDirty();
       hasUnsavedChangesRef.current = isDirty;
     }
-  }, [title, description, date, snoozeMinutes]);
+  }, [title, description, date, snoozeMinutes, selectedAlerts, customDays]);
 
   const checkIsDirty = () => {
     if (!initialData) {
@@ -55,7 +70,30 @@ export default function ReminderForm({
     const isDateChanged =
       date.getTime() !== new Date(initialData.date).getTime();
     const isSnoozeChanged = snoozeMinutes !== (initialData.snoozeMinutes || 10);
-    return isTitleChanged || isDescChanged || isDateChanged || isSnoozeChanged;
+
+    // Check alerts change
+    const initialAlerts = initialData.alerts || [ALERT_TYPES.AT_TIME];
+    const isAlertsChanged =
+      JSON.stringify(selectedAlerts.sort()) !==
+      JSON.stringify(initialAlerts.sort());
+
+    // Check custom days change if custom is selected
+    const initialCustom =
+      initialAlerts
+        .find((a) => a.startsWith(ALERT_TYPES.CUSTOM_PREFIX))
+        ?.split(":")[1] || "1";
+    const isCustomChanged =
+      selectedAlerts.some((a) => a.startsWith(ALERT_TYPES.CUSTOM_PREFIX)) &&
+      customDays !== initialCustom;
+
+    return (
+      isTitleChanged ||
+      isDescChanged ||
+      isDateChanged ||
+      isSnoozeChanged ||
+      isAlertsChanged ||
+      isCustomChanged
+    );
   };
 
   const handleSave = () => {
@@ -74,6 +112,11 @@ export default function ReminderForm({
       description,
       date: scheduledDate.toISOString(),
       snoozeMinutes,
+      alerts: selectedAlerts.map((a) =>
+        a === ALERT_TYPES.CUSTOM
+          ? `${ALERT_TYPES.CUSTOM_PREFIX}${customDays}`
+          : a,
+      ),
     });
   };
 
@@ -86,6 +129,43 @@ export default function ReminderForm({
   const showMode = (currentMode) => {
     setShowPicker(true);
     setMode(currentMode);
+  };
+
+  const handleToggleAlert = (optionId) => {
+    if (optionId === ALERT_TYPES.AT_TIME) {
+      const isSelected = selectedAlerts.includes(optionId);
+      if (isSelected && selectedAlerts.length === 1) return;
+    }
+
+    setSelectedAlerts((prev) => {
+      if (optionId === ALERT_TYPES.CUSTOM) {
+        const customIndex = prev.findIndex((a) =>
+          a.startsWith(ALERT_TYPES.CUSTOM_PREFIX),
+        );
+        if (customIndex >= 0) {
+          return prev.filter((_, i) => i !== customIndex);
+        } else {
+          return [...prev, `${ALERT_TYPES.CUSTOM_PREFIX}${customDays}`];
+        }
+      }
+
+      if (prev.includes(optionId)) {
+        return prev.filter((id) => id !== optionId);
+      } else {
+        return [...prev, optionId];
+      }
+    });
+  };
+
+  const handleCustomDaysChange = (numeric) => {
+    setCustomDays(numeric);
+    setSelectedAlerts((prev) =>
+      prev.map((a) =>
+        a.startsWith(ALERT_TYPES.CUSTOM_PREFIX)
+          ? `${ALERT_TYPES.CUSTOM_PREFIX}${numeric}`
+          : a,
+      ),
+    );
   };
 
   return (
@@ -113,40 +193,11 @@ export default function ReminderForm({
         />
 
         <Text style={styles.sectionHeader}>When should we remind you?</Text>
-        <View style={styles.dateTimeRow}>
-          <TouchableOpacity
-            style={styles.dateTimeCard}
-            onPress={() => showMode("date")}
-          >
-            <View style={styles.iconCircle}>
-              <Ionicons name="calendar" size={20} color={COLORS.primary} />
-            </View>
-            <View>
-              <Text style={styles.cardLabel}>Date</Text>
-              <Text style={styles.cardValue}>
-                {date.toLocaleDateString("en-GB")}
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.dateTimeCard}
-            onPress={() => showMode("time")}
-          >
-            <View style={[styles.iconCircle, { backgroundColor: "#ECFDF5" }]}>
-              <Ionicons name="time" size={20} color={COLORS.success} />
-            </View>
-            <View>
-              <Text style={styles.cardLabel}>Time</Text>
-              <Text style={styles.cardValue}>
-                {date.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+        <DateTimeSection
+          date={date}
+          onDatePress={() => showMode("date")}
+          onTimePress={() => showMode("time")}
+        />
 
         {showPicker && (
           <DateTimePicker
@@ -160,28 +211,19 @@ export default function ReminderForm({
           />
         )}
 
+        <Text style={styles.sectionHeader}>Notification Time</Text>
+        <AlertsSection
+          selectedAlerts={selectedAlerts}
+          onToggleAlert={handleToggleAlert}
+          customDays={customDays}
+          onCustomDaysChange={handleCustomDaysChange}
+        />
+
         <Text style={styles.sectionHeader}>Snooze Duration</Text>
-        <View style={styles.snoozeRow}>
-          {[5, 10, 15, 30].map((min) => (
-            <TouchableOpacity
-              key={min}
-              style={[
-                styles.snoozeChip,
-                snoozeMinutes === min && styles.snoozeChipActive,
-              ]}
-              onPress={() => setSnoozeMinutes(min)}
-            >
-              <Text
-                style={[
-                  styles.snoozeText,
-                  snoozeMinutes === min && styles.snoozeTextActive,
-                ]}
-              >
-                {min}m
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <SnoozeSection
+          snoozeMinutes={snoozeMinutes}
+          onSelect={setSnoozeMinutes}
+        />
       </ScrollView>
 
       <View style={styles.formActions}>
@@ -207,76 +249,6 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 12,
   },
-
-  // Date Time Cards
-  dateTimeRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  dateTimeCard: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.surface,
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    // Soft shadow
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#EEF2FF",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  cardLabel: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    fontWeight: "500",
-  },
-  cardValue: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
-    fontWeight: "600",
-    marginTop: 2,
-  },
-
-  // Snooze Chips
-  snoozeRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  snoozeChip: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 50, // Capsule shape
-    alignItems: "center",
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  snoozeChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  snoozeText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: COLORS.textSecondary,
-  },
-  snoozeTextActive: {
-    color: COLORS.white,
-  },
-
   formActions: {
     flexDirection: "row",
     marginTop: "auto",

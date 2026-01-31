@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TOPOGRAPHY } from "../../constants/typography";
 import { COLORS } from "../../constants/colors";
+import { ALERT_TYPES } from "../../constants/reminderConfig";
 
 export default function ReminderItem({ item, onEdit, onDelete }) {
   const isExpired = new Date(item.date) < new Date();
@@ -54,6 +55,30 @@ export default function ReminderItem({ item, onEdit, onDelete }) {
             </View>
           )}
         </View>
+
+        {/* Display Alert Summaries */}
+        {item.alerts && item.alerts.length > 0 && !isExpired && (
+          <View style={styles.alertsRow}>
+            {item.alerts.map((alert, index) => {
+              let label = "";
+              if (alert === ALERT_TYPES.AT_TIME) label = "At time";
+              else if (alert === ALERT_TYPES.ONE_DAY_BEFORE)
+                label = "1 day before";
+              else if (alert === ALERT_TYPES.TWO_DAYS_BEFORE)
+                label = "2 days before";
+              else if (alert === ALERT_TYPES.ONE_WEEK_BEFORE)
+                label = "1 week before";
+              else if (alert.startsWith(ALERT_TYPES.CUSTOM_PREFIX))
+                label = `${alert.split(":")[1]} days before`;
+
+              return (
+                <View key={index} style={styles.alertBadge}>
+                  <Text style={styles.alertBadgeText}>{label}</Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
       </View>
 
       <TouchableOpacity
@@ -164,5 +189,25 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: COLORS.dangerBg,
     marginLeft: 12,
+  },
+
+  alertsRow: {
+    marginTop: 6,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+  },
+  alertBadge: {
+    backgroundColor: "#EEF2FF",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 0.5,
+    borderColor: "#C7D2FE",
+  },
+  alertBadgeText: {
+    fontSize: 10,
+    color: "#34495E",
+    fontWeight: "500",
   },
 });

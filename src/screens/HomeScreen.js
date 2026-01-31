@@ -1,7 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import { View, FlatList, StyleSheet, Dimensions } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import * as Notifications from "expo-notifications";
 import {
   useSafeAreaInsets,
   SafeAreaView,
@@ -14,7 +13,6 @@ import Header from "../components/Header";
 import BottomNav from "../components/BottomNav";
 import SettingsModal from "../components/SettingsModal";
 import RemindersModal from "../components/RemindersModal";
-import { ReminderService } from "../services/ReminderService";
 
 const { width } = Dimensions.get("window");
 
@@ -25,21 +23,6 @@ export default function HomeScreen() {
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [remindersVisible, setRemindersVisible] = useState(false);
   const [showBack, setShowBack] = useState(false);
-
-  useEffect(() => {
-    const subscription = Notifications.addNotificationResponseReceivedListener(
-      async (response) => {
-        const actionId = response.actionIdentifier;
-        if (actionId === "SNOOZE") {
-          await ReminderService.snoozeReminder(
-            response.notification.request.content
-          );
-        }
-      }
-    );
-
-    return () => subscription.remove();
-  }, []);
 
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
@@ -56,7 +39,7 @@ export default function HomeScreen() {
         onZoomChange={setIsScrollEnabled}
       />
     ),
-    [showBack]
+    [showBack],
   );
 
   const keyExtractor = useCallback((item) => item.id.toString(), []);
@@ -84,7 +67,7 @@ export default function HomeScreen() {
   const handleRemindersPress = useCallback(() => setRemindersVisible(true), []);
   const handleFlipToggle = useCallback(
     () => setShowBack(!showBack),
-    [showBack]
+    [showBack],
   );
 
   return (

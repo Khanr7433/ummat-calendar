@@ -1,14 +1,34 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NotificationManager from "./NotificationManager";
-import { REMINDER_CONFIG } from "../constants/reminderConfig";
+import { REMINDER_CONFIG, ALERT_TYPES } from "../constants/reminderConfig";
 
 const { STORAGE_KEY } = REMINDER_CONFIG;
+
+const getAlertOffset = (alertType) => {
+  if (alertType === ALERT_TYPES.AT_TIME) return 0;
+  if (alertType === ALERT_TYPES.ONE_DAY_BEFORE) return 24 * 60 * 60 * 1000;
+  if (alertType === ALERT_TYPES.TWO_DAYS_BEFORE) return 48 * 60 * 60 * 1000;
+  if (alertType === ALERT_TYPES.ONE_WEEK_BEFORE) return 7 * 24 * 60 * 60 * 1000;
+  if (alertType.startsWith(ALERT_TYPES.CUSTOM_PREFIX)) {
+    const days = parseInt(alertType.split(":")[1], 10);
+    return days * 24 * 60 * 60 * 1000;
+  }
+  return 0;
+};
 
 export const ReminderService = {
   async getReminders() {
     try {
       const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
-      return jsonValue != null ? JSON.parse(jsonValue) : [];
+      const data = jsonValue != null ? JSON.parse(jsonValue) : [];
+
+      // Normalize legacy data in memory
+      return data.map((r) => ({
+        ...r,
+        alerts: r.alerts || [ALERT_TYPES.AT_TIME],
+        notificationIds:
+          r.notificationIds || (r.notificationId ? [r.notificationId] : []),
+      }));
     } catch (e) {
       console.error("Error reading reminders", e);
       return [];
@@ -22,26 +42,47 @@ export const ReminderService = {
         throw new Error("Notification permissions not granted");
       }
 
-      const triggerDate = new Date(reminder.date);
-      const id = Date.now();
+      const eventDate = new Date(reminder.date);
+      const id = Date.now().toString();
+      const alerts =
+        reminder.alerts && reminder.alerts.length > 0
+          ? reminder.alerts
+          : [ALERT_TYPES.AT_TIME];
 
-      const notificationId = await NotificationManager.schedule(
-        reminder.title,
-        reminder.description,
-        triggerDate,
-        {
-          id: id.toString(),
-          snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
-        },
-      );
+      const notificationIds = [];
+
+      for (const alertType of alerts) {
+        const offset = getAlertOffset(alertType);
+        const triggerDate = new Date(eventDate.getTime() - offset);
+
+        // Don't schedule past alerts
+        if (triggerDate > new Date()) {
+          const notificationId = await NotificationManager.schedule(
+            reminder.title,
+            reminder.description,
+            triggerDate,
+            {
+              id: id,
+              snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
+              originalAlert: alertType,
+            },
+          );
+          notificationIds.push(notificationId);
+        }
+      }
 
       const newReminder = {
-        id: id.toString(),
-        notificationId,
         ...reminder,
+        id,
+        alerts,
+        notificationIds,
+        // Remove legacy field support in new objects if possible, but keep for now if needed.
+        // We will prefer using notificationIds.
+        notificationId: null,
       };
 
       const currentReminders = await this.getReminders();
+      // We need to store the raw object, getReminders handles normalization
       const updatedReminders = [...currentReminders, newReminder];
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedReminders));
 
@@ -64,24 +105,49 @@ export const ReminderService = {
       }
 
       const oldReminder = currentReminders[oldReminderIndex];
-      if (oldReminder.notificationId) {
-        await NotificationManager.cancel(oldReminder.notificationId);
+
+      // Cancel all old notifications
+      const idsToCancel = oldReminder.notificationIds || [];
+      if (oldReminder.notificationId)
+        idsToCancel.push(oldReminder.notificationId);
+
+      for (const notifId of idsToCancel) {
+        await NotificationManager.cancel(notifId);
       }
 
-      const triggerDate = new Date(reminder.date);
-      const notificationId = await NotificationManager.schedule(
-        reminder.title,
-        reminder.description,
-        triggerDate,
-        {
-          id: Date.now().toString(),
-          snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
-        },
-      );
+      // Schedule new ones
+      const eventDate = new Date(reminder.date);
+      const alerts =
+        reminder.alerts && reminder.alerts.length > 0
+          ? reminder.alerts
+          : [ALERT_TYPES.AT_TIME];
+
+      const newNotificationIds = [];
+
+      for (const alertType of alerts) {
+        const offset = getAlertOffset(alertType);
+        const triggerDate = new Date(eventDate.getTime() - offset);
+
+        if (triggerDate > new Date()) {
+          const notificationId = await NotificationManager.schedule(
+            reminder.title,
+            reminder.description,
+            triggerDate,
+            {
+              id: reminder.id,
+              snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
+              originalAlert: alertType,
+            },
+          );
+          newNotificationIds.push(notificationId);
+        }
+      }
 
       const updatedReminder = {
         ...reminder,
-        notificationId,
+        alerts,
+        notificationIds: newNotificationIds,
+        notificationId: null,
       };
 
       const updatedReminders = [...currentReminders];
@@ -101,8 +167,14 @@ export const ReminderService = {
       const currentReminders = await this.getReminders();
       const reminderToDelete = currentReminders.find((r) => r.id === id);
 
-      if (reminderToDelete && reminderToDelete.notificationId) {
-        await NotificationManager.cancel(reminderToDelete.notificationId);
+      if (reminderToDelete) {
+        const idsToCancel = reminderToDelete.notificationIds || [];
+        if (reminderToDelete.notificationId)
+          idsToCancel.push(reminderToDelete.notificationId);
+
+        for (const notifId of idsToCancel) {
+          await NotificationManager.cancel(notifId);
+        }
       }
 
       const updatedReminders = currentReminders.filter((r) => r.id !== id);
@@ -118,7 +190,7 @@ export const ReminderService = {
     try {
       const { title, body, data } = originalContent;
       const snoozeMinutes =
-        data && data.snoozeMinutes ? data.snoozeMinutes : 10;
+        data && data.snoozeMinutes ? parseInt(data.snoozeMinutes) : 10;
 
       const triggerDate = new Date(Date.now() + snoozeMinutes * 60 * 1000);
 
@@ -126,24 +198,25 @@ export const ReminderService = {
         `${title} (Snoozed)`,
         body,
         triggerDate,
-        { ...data },
+        { ...data, isSnooze: true },
       );
 
+      // We do NOT update the event date. We just track this extra notification ID.
       if (data && data.id) {
         try {
           const currentReminders = await this.getReminders();
           const reminderIndex = currentReminders.findIndex(
-            (r) =>
-              r.id === data.id.toString() ||
-              r.id === data.id ||
-              (oldNotificationId && r.notificationId === oldNotificationId),
+            (r) => r.id === data.id.toString() || r.id === data.id,
           );
 
           if (reminderIndex !== -1) {
+            const reminder = currentReminders[reminderIndex];
+            const updatedIds = [...(reminder.notificationIds || [])];
+            updatedIds.push(notificationId);
+
             currentReminders[reminderIndex] = {
-              ...currentReminders[reminderIndex],
-              date: triggerDate.toISOString(),
-              notificationId: notificationId,
+              ...reminder,
+              notificationIds: updatedIds,
             };
             await AsyncStorage.setItem(
               STORAGE_KEY,
@@ -167,33 +240,40 @@ export const ReminderService = {
       await NotificationManager.cancelAll();
 
       const currentReminders = await this.getReminders();
+      // normalize happens in getReminders, so these have alerts array
       const now = new Date();
       const updatedReminders = [];
 
       for (const reminder of currentReminders) {
-        const triggerDate = new Date(reminder.date);
+        const eventDate = new Date(reminder.date);
+        const alerts = reminder.alerts || [ALERT_TYPES.AT_TIME];
+        const newNotificationIds = [];
 
-        if (triggerDate > now) {
-          const notificationId = await NotificationManager.schedule(
-            reminder.title,
-            reminder.description,
-            triggerDate,
-            {
-              id: reminder.id.toString(),
-              snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
-            },
-          );
+        for (const alertType of alerts) {
+          const offset = getAlertOffset(alertType);
+          const triggerDate = new Date(eventDate.getTime() - offset);
 
-          updatedReminders.push({
-            ...reminder,
-            notificationId: notificationId,
-          });
-        } else {
-          updatedReminders.push({
-            ...reminder,
-            notificationId: null,
-          });
+          if (triggerDate > now) {
+            const notificationId = await NotificationManager.schedule(
+              reminder.title,
+              reminder.description,
+              triggerDate,
+              {
+                id: reminder.id,
+                snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
+                originalAlert: alertType,
+              },
+            );
+            newNotificationIds.push(notificationId);
+          }
         }
+
+        updatedReminders.push({
+          ...reminder,
+          alerts,
+          notificationIds: newNotificationIds,
+          notificationId: null,
+        });
       }
 
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedReminders));

@@ -35,3 +35,22 @@ export const REMINDER_CONFIG = {
     },
   ],
 };
+
+export const ALERT_TYPES = {
+  AT_TIME: "at_time",
+  ONE_DAY_BEFORE: "1_day_before",
+  TWO_DAYS_BEFORE: "2_days_before",
+  ONE_WEEK_BEFORE: "1_week_before",
+  CUSTOM_PREFIX: "custom:",
+  CUSTOM: "custom",
+};
+
+export const ALERT_OPTIONS = [
+  { id: ALERT_TYPES.AT_TIME, label: "At time of event" },
+  { id: ALERT_TYPES.ONE_DAY_BEFORE, label: "1 day before" },
+  { id: ALERT_TYPES.TWO_DAYS_BEFORE, label: "2 days before" },
+  { id: ALERT_TYPES.ONE_WEEK_BEFORE, label: "1 week before" },
+  { id: ALERT_TYPES.CUSTOM, label: "Custom" },
+];
+
+export const SNOOZE_OPTIONS = [5, 10, 15, 30];

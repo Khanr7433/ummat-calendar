@@ -59,11 +59,6 @@ class NotificationManager {
         channelId: REMINDER_CONFIG.CHANNEL_ID,
       };
 
-      console.log("[NotificationManager] Scheduling:", {
-        title,
-        triggerDate: triggerDate.toISOString(),
-      });
-
       return await Notifications.scheduleNotificationAsync({
         content: {
           title,
