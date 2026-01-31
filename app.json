@@ -19,6 +19,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.khanr7433.ummatcalendar",
+      "versionCode": 2,
       "permissions": ["SCHEDULE_EXACT_ALARM", "USE_EXACT_ALARM", "WAKE_LOCK"]
     },
     "web": {
