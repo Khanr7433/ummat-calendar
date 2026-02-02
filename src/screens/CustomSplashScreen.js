@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, Image, Animated, Easing, StyleSheet } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
+import Constants from "expo-constants";
 import { COLORS } from "../constants/colors";
 import { TOPOGRAPHY } from "../constants/typography";
 
@@ -88,6 +89,16 @@ export default function CustomSplashScreen({ onFinish }) {
           {"\n"}KONDHWA, PUNE-48
         </Text>
       </Animated.View>
+      <Animated.Text
+        style={{
+          position: "absolute",
+          bottom: 40,
+          opacity: fadeAnim,
+          ...styles.versionText,
+        }}
+      >
+        Version {Constants.expoConfig?.version ?? "1.0.0"}
+      </Animated.Text>
     </View>
   );
 }
@@ -131,5 +142,11 @@ const styles = StyleSheet.create({
   splashTextSubtitleBold: {
     fontWeight: "800",
     color: COLORS.textPrimary,
+  },
+  versionText: {
+    ...TOPOGRAPHY.caption,
+    fontSize: 12,
+    color: COLORS.textTertiary,
+    letterSpacing: 1,
   },
 });

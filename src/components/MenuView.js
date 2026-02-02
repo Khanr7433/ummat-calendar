@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import { TOPOGRAPHY } from "../constants/typography";
 import { COLORS } from "../constants/colors";
 
@@ -63,7 +64,12 @@ export default function MenuView({ onAboutPress, onPrivacyPress }) {
           />
         </View>
         <Text style={styles.appName}>Ummat Calendar</Text>
-        <Text style={styles.version}>Version 1.0.0</Text>
+        <Text style={styles.version}>
+          Version{" "}
+          {Constants.expoConfig?.version ??
+            Constants.manifest?.version ??
+            "1.0.0"}
+        </Text>
       </View>
 
       <Text style={styles.sectionTitle}>GENERAL</Text>
