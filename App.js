@@ -4,6 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import CustomSplashScreen from "./src/screens/CustomSplashScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import { ReminderService } from "./src/services/ReminderService";
+import { checkAppUpdate } from "./src/services/InAppUpdate";
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
@@ -11,6 +12,7 @@ export default function App() {
   useEffect(() => {
     ReminderService.initialize();
     ReminderService.rescheduleAllReminders();
+    checkAppUpdate();
   }, []);
 
   if (!appIsReady) {
