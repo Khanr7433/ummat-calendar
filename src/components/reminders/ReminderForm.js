@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { TOPOGRAPHY } from "../../constants/typography";
 import { COLORS } from "../../constants/colors";
 import { ALERT_TYPES } from "../../constants/reminderConfig";

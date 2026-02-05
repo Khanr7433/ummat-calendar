@@ -10,7 +10,7 @@ const inAppUpdates = new SpInAppUpdates(
 );
 
 export const checkAppUpdate = async () => {
-  if (Platform.OS !== "android") return;
+  if (Platform.OS !== "android" || __DEV__) return;
 
   try {
     const result: NeedsUpdateResponse = await inAppUpdates.checkNeedsUpdate();
