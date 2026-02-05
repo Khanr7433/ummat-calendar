@@ -25,7 +25,7 @@ class NotificationManager {
         for (const sound of REMINDER_CONFIG.SOUNDS) {
           // Filename without extension for Android resource
           const resourceName = sound.filename.split(".")[0];
-          const channelId = `ummat_reminders_${sound.id}`;
+          const channelId = `${REMINDER_CONFIG.CHANNEL_PREFIX}${sound.id}`;
 
           await Notifications.setNotificationChannelAsync(channelId, {
             name: `${REMINDER_CONFIG.CHANNEL_NAME} - ${sound.label}`,
@@ -59,7 +59,7 @@ class NotificationManager {
   async schedule(title, body, triggerDate, data = {}, channelId = null) {
     try {
       // Default to the 'default' sound channel if none provided
-      const targetChannelId = channelId || `ummat_reminders_default`;
+      const targetChannelId = channelId || REMINDER_CONFIG.DEFAULT_CHANNEL_ID;
 
       const trigger = {
         type: Notifications.SchedulableTriggerInputTypes.DATE,

@@ -39,7 +39,7 @@ export const ReminderService = {
     const validSound =
       REMINDER_CONFIG.SOUNDS.find((s) => s.id === soundId) ||
       REMINDER_CONFIG.SOUNDS[0];
-    return `ummat_reminders_${validSound.id}`;
+    return `${REMINDER_CONFIG.CHANNEL_PREFIX}${validSound.id}`;
   },
 
   async addReminder(reminder) {
@@ -73,6 +73,7 @@ export const ReminderService = {
             {
               id: id,
               snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
+              soundId: reminder.soundId,
               originalAlert: alertType,
             },
             channelId,
@@ -148,6 +149,7 @@ export const ReminderService = {
             {
               id: reminder.id,
               snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
+              soundId: reminder.soundId,
               originalAlert: alertType,
             },
             channelId,
@@ -204,49 +206,85 @@ export const ReminderService = {
       const { title, body, data } = originalContent;
       const snoozeMinutes =
         data && data.snoozeMinutes ? parseInt(data.snoozeMinutes) : 10;
-
-      const triggerDate = new Date(Date.now() + snoozeMinutes * 60 * 1000);
-
       // Use the soundID from the original data if available, or default
       const soundId = data && data.soundId ? data.soundId : "default";
-      const channelId = this.getChannelIdForSound(soundId);
 
-      const notificationId = await NotificationManager.schedule(
-        `${title} (Snoozed)`,
-        body,
-        triggerDate,
-        { ...data, isSnooze: true },
-        channelId,
-      );
-
-      // We do NOT update the event date. We just track this extra notification ID.
+      // 1. Fetch current reminder to check config
+      let reminder = null;
       if (data && data.id) {
-        try {
-          const currentReminders = await this.getReminders();
-          const reminderIndex = currentReminders.findIndex(
-            (r) => r.id === data.id.toString() || r.id === data.id,
-          );
-
-          if (reminderIndex !== -1) {
-            const reminder = currentReminders[reminderIndex];
-            const updatedIds = [...(reminder.notificationIds || [])];
-            updatedIds.push(notificationId);
-
-            currentReminders[reminderIndex] = {
-              ...reminder,
-              notificationIds: updatedIds,
-            };
-            await AsyncStorage.setItem(
-              STORAGE_KEY,
-              JSON.stringify(currentReminders),
-            );
-          }
-        } catch (storageError) {
-          console.error("Error updating storage for snooze", storageError);
-        }
+        const currentReminders = await this.getReminders();
+        reminder = currentReminders.find(
+          (r) => r.id === data.id.toString() || r.id === data.id,
+        );
       }
 
-      return true;
+      // Check for "Smart Snooze" condition:
+      // Single alert && it is "at_time"
+      const isSingleAtTimeAlert =
+        reminder &&
+        reminder.alerts &&
+        reminder.alerts.length === 1 &&
+        reminder.alerts[0] === ALERT_TYPES.AT_TIME;
+
+      // 2. Logic Branch
+      if (isSingleAtTimeAlert) {
+        // BRANCH A: Shift the Event Time
+        const oldDate = new Date(reminder.date);
+        const newDate = new Date(oldDate.getTime() + snoozeMinutes * 60 * 1000);
+
+        const updatedReminder = {
+          ...reminder,
+          date: newDate.toISOString(),
+          // Ensure we keep soundId and other props
+        };
+
+        // This will cancel old notifs and schedule new ones at the new time
+        await this.updateReminder(updatedReminder);
+
+        return true;
+      } else {
+        // BRANCH B: Standard Snooze (Temporary Notification)
+        // Applies for: Multile alerts, or Pre-event alerts (1 day before etc)
+        const triggerDate = new Date(Date.now() + snoozeMinutes * 60 * 1000);
+        const channelId = this.getChannelIdForSound(soundId);
+
+        const notificationId = await NotificationManager.schedule(
+          `${title} (Snoozed)`,
+          body,
+          triggerDate,
+          { ...data, isSnooze: true },
+          channelId,
+        );
+
+        // Track this ID in the original reminder without changing event time
+        if (reminder) {
+          try {
+            // Re-fetch to be safe or use current reference
+            const currentReminders = await this.getReminders();
+            const listIndex = currentReminders.findIndex(
+              (r) => r.id === reminder.id,
+            );
+
+            if (listIndex !== -1) {
+              const targetReminder = currentReminders[listIndex];
+              const updatedIds = [...(targetReminder.notificationIds || [])];
+              updatedIds.push(notificationId);
+
+              currentReminders[listIndex] = {
+                ...targetReminder,
+                notificationIds: updatedIds,
+              };
+              await AsyncStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(currentReminders),
+              );
+            }
+          } catch (storageError) {
+            console.error("Error updating storage for snooze ID", storageError);
+          }
+        }
+        return true;
+      }
     } catch (e) {
       console.error("Error snoozing reminder", e);
       return false;

@@ -3,7 +3,8 @@ import * as Notifications from "expo-notifications";
 export const REMINDER_CONFIG = {
   STORAGE_KEY: "@ummat_calendar_reminders",
   SOUND_PREF_KEY: "@ummat_calendar_sound_pref",
-  DEFAULT_CHANNEL_ID: "ummat_reminders_default", // Fallback
+  CHANNEL_PREFIX: "ummat_reminders_v2_",
+  DEFAULT_CHANNEL_ID: "ummat_reminders_v2_default", // Fallback
   CHANNEL_NAME: "Calendar Alarms",
   ACTION_CATEGORY: "alarm-actions",
 
@@ -25,6 +26,12 @@ export const REMINDER_CONFIG = {
       filename: "medium_bell_ringing_near.ogg",
     },
     { id: "spaceship", label: "Spaceship", filename: "spaceship_alarm.ogg" },
+    // Modern Sounds
+    { id: "melody", label: "Melody", filename: "melody.ogg" },
+    { id: "soft_chime", label: "Soft Chime", filename: "soft_chime.ogg" },
+    { id: "galaxy", label: "Galaxy", filename: "galaxy.ogg" },
+    { id: "sunrise", label: "Sunrise", filename: "sunrise.ogg" },
+    { id: "minimal", label: "Minimal", filename: "minimal.ogg" },
   ],
 
   BASE_CHANNEL_SETTINGS: {

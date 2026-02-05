@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
+  FlatList,
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,7 +13,7 @@ import { COLORS } from "../../constants/colors";
 import { TOPOGRAPHY } from "../../constants/typography";
 
 import { Audio } from "expo-av";
-import { useEffect, useState } from "react";
+import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 
 // Map sound IDs to local assets
 const SOUND_FILES = {
@@ -21,10 +22,21 @@ const SOUND_FILES = {
   mechanical: require("../../../assets/sounds/mechanical_clock_ring.ogg"),
   bell: require("../../../assets/sounds/medium_bell_ringing_near.ogg"),
   spaceship: require("../../../assets/sounds/spaceship_alarm.ogg"),
+  melody: require("../../../assets/sounds/melody.ogg"),
+  soft_chime: require("../../../assets/sounds/soft_chime.ogg"),
+  galaxy: require("../../../assets/sounds/galaxy.ogg"),
+  sunrise: require("../../../assets/sounds/sunrise.ogg"),
+  minimal: require("../../../assets/sounds/minimal.ogg"),
 };
 
-export default function SoundSelector({ selectedSoundId, onSelect }) {
+const SoundSelector = forwardRef(({ selectedSoundId, onSelect }, ref) => {
   const [sound, setSound] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [tempSelectedId, setTempSelectedId] = useState(selectedSoundId);
+
+  useEffect(() => {
+    setTempSelectedId(selectedSoundId);
+  }, [selectedSoundId]);
 
   useEffect(() => {
     return () => {
@@ -33,6 +45,18 @@ export default function SoundSelector({ selectedSoundId, onSelect }) {
       }
     };
   }, [sound]);
+
+  useImperativeHandle(ref, () => ({
+    stopPreview: async () => {
+      if (sound) {
+        try {
+          await sound.stopAsync();
+        } catch (err) {
+          console.log("Error stopping sound", err);
+        }
+      }
+    },
+  }));
 
   const playSound = async (soundId) => {
     try {
@@ -49,73 +73,191 @@ export default function SoundSelector({ selectedSoundId, onSelect }) {
     }
   };
 
-  const handleSelect = (soundId) => {
-    onSelect(soundId);
+  const handlePreview = (soundId) => {
+    setTempSelectedId(soundId);
     playSound(soundId);
   };
 
+  const handleApply = () => {
+    onSelect(tempSelectedId);
+    setIsExpanded(false);
+  };
+
+  const selectedSound =
+    REMINDER_CONFIG.SOUNDS.find((s) => s.id === selectedSoundId) ||
+    REMINDER_CONFIG.SOUNDS[0];
+
   return (
     <View style={styles.container}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.list}
+      {/* Dropdown Header */}
+      <TouchableOpacity
+        style={styles.header}
+        onPress={() => setIsExpanded(!isExpanded)}
+        activeOpacity={0.7}
       >
-        {REMINDER_CONFIG.SOUNDS.map((soundItem) => {
-          const isSelected = selectedSoundId === soundItem.id;
-          return (
-            <TouchableOpacity
-              key={soundItem.id}
-              style={[styles.option, isSelected && styles.selectedOption]}
-              onPress={() => handleSelect(soundItem.id)}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name={isSelected ? "musical-note" : "musical-note-outline"}
-                size={16}
-                color={isSelected ? COLORS.white : COLORS.textSecondary}
-              />
-              <Text style={[styles.label, isSelected && styles.selectedLabel]}>
-                {soundItem.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+        <View style={styles.headerContent}>
+          <View style={styles.iconContainer}>
+            <Ionicons name="musical-note" size={18} color={COLORS.primary} />
+          </View>
+          <Text style={styles.headerLabel}>{selectedSound.label}</Text>
+        </View>
+        <Ionicons
+          name={isExpanded ? "chevron-up" : "chevron-down"}
+          size={20}
+          color={COLORS.textSecondary}
+        />
+      </TouchableOpacity>
+
+      {/* Expanded List */}
+      {isExpanded && (
+        <View style={styles.dropdownContainer}>
+          <ScrollView style={styles.dropdownList} nestedScrollEnabled={true}>
+            {REMINDER_CONFIG.SOUNDS.map((soundItem) => {
+              const isSelected = tempSelectedId === soundItem.id;
+              return (
+                <TouchableOpacity
+                  key={soundItem.id}
+                  style={[styles.option, isSelected && styles.selectedOption]}
+                  onPress={() => handlePreview(soundItem.id)}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={[
+                      styles.optionIcon,
+                      isSelected && styles.selectedOptionIcon,
+                    ]}
+                  >
+                    {isSelected && (
+                      <Ionicons
+                        name="checkmark"
+                        size={14}
+                        color={COLORS.white}
+                      />
+                    )}
+                  </View>
+                  <Text
+                    style={[
+                      styles.optionLabel,
+                      isSelected && styles.selectedOptionLabel,
+                    ]}
+                  >
+                    {soundItem.label}
+                  </Text>
+                  {isSelected && (
+                    <Ionicons
+                      name="volume-medium"
+                      size={16}
+                      color={COLORS.primary}
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+          <TouchableOpacity
+            style={styles.applyButton}
+            onPress={handleApply}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.applyButtonText}>Apply</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
-}
+});
+
+export default SoundSelector;
 
 const styles = StyleSheet.create({
   container: {
     marginBottom: 8,
   },
-  list: {
-    gap: 8,
-    paddingHorizontal: 4,
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  headerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  iconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#F0F0F0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerLabel: {
+    ...TOPOGRAPHY.body,
+    fontWeight: "600",
+    color: COLORS.text,
+  },
+  dropdownContainer: {
+    marginTop: 8,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  dropdownList: {
+    maxHeight: 250,
   },
   option: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.white,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F5F5F5",
+    gap: 12,
   },
   selectedOption: {
+    backgroundColor: "#F8F9FE",
+  },
+  optionIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectedOptionIcon: {
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
   },
-  label: {
-    ...TOPOGRAPHY.caption,
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    fontWeight: "500",
+  optionLabel: {
+    ...TOPOGRAPHY.body,
+    fontSize: 14,
+    color: COLORS.text,
+    flex: 1,
   },
-  selectedLabel: {
+  selectedOptionLabel: {
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  applyButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  applyButtonText: {
+    ...TOPOGRAPHY.button,
     color: COLORS.white,
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

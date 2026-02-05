@@ -36,6 +36,14 @@ export default function ReminderForm({
   const [customDays, setCustomDays] = useState("1");
   const [soundId, setSoundId] = useState("default");
 
+  const soundSelectorRef = React.useRef(null);
+
+  const handleInteraction = () => {
+    if (soundSelectorRef.current) {
+      soundSelectorRef.current.stopPreview();
+    }
+  };
+
   useEffect(() => {
     if (initialData) {
       setTitle(initialData.title);
@@ -131,14 +139,17 @@ export default function ReminderForm({
     const currentDate = selectedDate || date;
     setShowPicker(Platform.OS === "ios");
     setDate(currentDate);
+    handleInteraction();
   };
 
   const showMode = (currentMode) => {
+    handleInteraction();
     setShowPicker(true);
     setMode(currentMode);
   };
 
   const handleToggleAlert = (optionId) => {
+    handleInteraction();
     if (optionId === ALERT_TYPES.AT_TIME) {
       const isSelected = selectedAlerts.includes(optionId);
       if (isSelected && selectedAlerts.length === 1) return;
@@ -183,12 +194,15 @@ export default function ReminderForm({
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
+        onScrollBeginDrag={handleInteraction}
+        nestedScrollEnabled={true}
       >
         <AppInput
           label="Title"
           value={title}
           onChangeText={setTitle}
           placeholder="e.g. Read Surah Yaseen"
+          onFocus={handleInteraction}
         />
 
         <AppInput
@@ -197,6 +211,7 @@ export default function ReminderForm({
           onChangeText={setDescription}
           placeholder="Add details..."
           multiline
+          onFocus={handleInteraction}
         />
 
         <Text style={styles.sectionHeader}>When should we remind you?</Text>
@@ -229,11 +244,18 @@ export default function ReminderForm({
         <Text style={styles.sectionHeader}>Snooze Duration</Text>
         <SnoozeSection
           snoozeMinutes={snoozeMinutes}
-          onSelect={setSnoozeMinutes}
+          onSelect={(val) => {
+            setSnoozeMinutes(val);
+            handleInteraction();
+          }}
         />
 
         <Text style={styles.sectionHeader}>Reminder Sound</Text>
-        <SoundSelector selectedSoundId={soundId} onSelect={setSoundId} />
+        <SoundSelector
+          ref={soundSelectorRef}
+          selectedSoundId={soundId}
+          onSelect={setSoundId}
+        />
       </ScrollView>
 
       <View style={styles.formActions}>
