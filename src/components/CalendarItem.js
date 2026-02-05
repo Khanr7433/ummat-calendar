@@ -8,8 +8,14 @@ import { LAYOUT } from "../constants/layout";
 
 const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
   const { width, height, isSmallDevice } = useScreenDimensions();
+  const [containerHeight, setContainerHeight] = useState(0);
   const [aspectRatio, setAspectRatio] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Reset loading state when the item or side changes
+  React.useEffect(() => {
+    setLoading(true);
+  }, [showBack, item]);
 
   const containerStyle = useMemo(
     () => ({
@@ -18,18 +24,21 @@ const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
       alignItems: "center",
       justifyContent: "center",
     }),
-    [width]
+    [width],
   );
 
   const finalImageDimensions = useMemo(() => {
     const paddingH = isSmallDevice ? 24 : LAYOUT.spacing.m;
     const maxWidth = width - paddingH;
 
-    const heightPercent = isSmallDevice
-      ? parseFloat(LAYOUT.calendarItem.reducedImageHeightPercentage) / 100
-      : parseFloat(LAYOUT.calendarItem.fullImageHeightPercentage) / 100;
+    // Use actual Measured container height if available, otherwise fallback to safe percentage
+    const availableH =
+      containerHeight > 0
+        ? containerHeight
+        : height * (isSmallDevice ? 0.7 : 0.8);
 
-    const maxHeight = height * heightPercent;
+    // Subtract a small buffer to ensure no touching edges
+    const maxHeight = availableH - (isSmallDevice ? 10 : 20);
 
     if (!aspectRatio) {
       return { width: maxWidth, height: maxHeight };
@@ -43,19 +52,28 @@ const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
       const widthAtMaxHeight = maxHeight * aspectRatio;
       return { width: widthAtMaxHeight, height: maxHeight };
     }
-  }, [width, height, isSmallDevice, aspectRatio]);
+  }, [width, height, isSmallDevice, aspectRatio, containerHeight]);
 
   const imageStyle = useMemo(
     () => ({
       ...styles.image,
       width: finalImageDimensions.width,
       height: finalImageDimensions.height,
+      opacity: loading ? 0 : 1,
     }),
-    [finalImageDimensions]
+    [finalImageDimensions, loading],
   );
 
   return (
-    <View style={containerStyle}>
+    <View
+      style={containerStyle}
+      onLayout={(e) => {
+        const { height } = e.nativeEvent.layout;
+        if (height > 0 && Math.abs(height - containerHeight) > 1) {
+          setContainerHeight(height);
+        }
+      }}
+    >
       <ReactNativeZoomableView
         maxZoom={3}
         minZoom={1}
