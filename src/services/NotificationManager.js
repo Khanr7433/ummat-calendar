@@ -21,13 +21,18 @@ class NotificationManager {
   async requestPermissions() {
     try {
       if (Platform.OS === "android") {
-        await Notifications.setNotificationChannelAsync(
-          REMINDER_CONFIG.CHANNEL_ID,
-          {
-            name: REMINDER_CONFIG.CHANNEL_NAME,
-            ...REMINDER_CONFIG.CHANNEL_SETTINGS,
-          },
-        );
+        // Create a channel for each sound option
+        for (const sound of REMINDER_CONFIG.SOUNDS) {
+          // Filename without extension for Android resource
+          const resourceName = sound.filename.split(".")[0];
+          const channelId = `ummat_reminders_${sound.id}`;
+
+          await Notifications.setNotificationChannelAsync(channelId, {
+            name: `${REMINDER_CONFIG.CHANNEL_NAME} - ${sound.label}`,
+            sound: resourceName,
+            ...REMINDER_CONFIG.BASE_CHANNEL_SETTINGS,
+          });
+        }
       }
 
       await Notifications.setNotificationCategoryAsync(
@@ -51,12 +56,15 @@ class NotificationManager {
     }
   }
 
-  async schedule(title, body, triggerDate, data = {}) {
+  async schedule(title, body, triggerDate, data = {}, channelId = null) {
     try {
+      // Default to the 'default' sound channel if none provided
+      const targetChannelId = channelId || `ummat_reminders_default`;
+
       const trigger = {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: triggerDate,
-        channelId: REMINDER_CONFIG.CHANNEL_ID,
+        channelId: targetChannelId,
       };
 
       return await Notifications.scheduleNotificationAsync({

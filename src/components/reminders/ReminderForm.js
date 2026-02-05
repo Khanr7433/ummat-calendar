@@ -18,6 +18,7 @@ import AppInput from "../ui/AppInput";
 import DateTimeSection from "./DateTimeSection";
 import AlertsSection from "./AlertsSection";
 import SnoozeSection from "./SnoozeSection";
+import SoundSelector from "./SoundSelector";
 
 export default function ReminderForm({
   initialData,
@@ -33,6 +34,7 @@ export default function ReminderForm({
   const [mode, setMode] = useState("date");
   const [selectedAlerts, setSelectedAlerts] = useState([ALERT_TYPES.AT_TIME]);
   const [customDays, setCustomDays] = useState("1");
+  const [soundId, setSoundId] = useState("default");
 
   useEffect(() => {
     if (initialData) {
@@ -40,6 +42,7 @@ export default function ReminderForm({
       setDescription(initialData.description || "");
       setDate(new Date(initialData.date));
       setSnoozeMinutes(initialData.snoozeMinutes || 10);
+      setSoundId(initialData.soundId || "default");
 
       // Parse initial alerts
       let alerts = initialData.alerts || [ALERT_TYPES.AT_TIME];
@@ -71,6 +74,7 @@ export default function ReminderForm({
     const isDateChanged =
       date.getTime() !== new Date(initialData.date).getTime();
     const isSnoozeChanged = snoozeMinutes !== (initialData.snoozeMinutes || 10);
+    const isSoundChanged = soundId !== (initialData.soundId || "default");
 
     // Check alerts change
     const initialAlerts = initialData.alerts || [ALERT_TYPES.AT_TIME];
@@ -93,7 +97,8 @@ export default function ReminderForm({
       isDateChanged ||
       isSnoozeChanged ||
       isAlertsChanged ||
-      isCustomChanged
+      isCustomChanged ||
+      isSoundChanged
     );
   };
 
@@ -113,6 +118,7 @@ export default function ReminderForm({
       description,
       date: scheduledDate.toISOString(),
       snoozeMinutes,
+      soundId,
       alerts: selectedAlerts.map((a) =>
         a === ALERT_TYPES.CUSTOM
           ? `${ALERT_TYPES.CUSTOM_PREFIX}${customDays}`
@@ -225,6 +231,9 @@ export default function ReminderForm({
           snoozeMinutes={snoozeMinutes}
           onSelect={setSnoozeMinutes}
         />
+
+        <Text style={styles.sectionHeader}>Reminder Sound</Text>
+        <SoundSelector selectedSoundId={soundId} onSelect={setSoundId} />
       </ScrollView>
 
       <View style={styles.formActions}>

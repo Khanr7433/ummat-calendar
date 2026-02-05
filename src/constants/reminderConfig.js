@@ -2,11 +2,32 @@ import * as Notifications from "expo-notifications";
 
 export const REMINDER_CONFIG = {
   STORAGE_KEY: "@ummat_calendar_reminders",
-  CHANNEL_ID: "ummat_reminders_v6",
+  SOUND_PREF_KEY: "@ummat_calendar_sound_pref",
+  DEFAULT_CHANNEL_ID: "ummat_reminders_default", // Fallback
   CHANNEL_NAME: "Calendar Alarms",
   ACTION_CATEGORY: "alarm-actions",
 
-  CHANNEL_SETTINGS: {
+  SOUNDS: [
+    { id: "default", label: "Classic Alarm", filename: "alarm_clock.ogg" },
+    {
+      id: "digital",
+      label: "Digital Watch",
+      filename: "digital_watch_alarm_long.ogg",
+    },
+    {
+      id: "mechanical",
+      label: "Mechanical Clock",
+      filename: "mechanical_clock_ring.ogg",
+    },
+    {
+      id: "bell",
+      label: "Bell Ringing",
+      filename: "medium_bell_ringing_near.ogg",
+    },
+    { id: "spaceship", label: "Spaceship", filename: "spaceship_alarm.ogg" },
+  ],
+
+  BASE_CHANNEL_SETTINGS: {
     importance: Notifications.AndroidImportance.MAX,
     vibrationPattern: [0, 500, 200, 500],
     lightColor: "#FF231F7C",

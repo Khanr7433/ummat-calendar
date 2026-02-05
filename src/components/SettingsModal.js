@@ -33,8 +33,10 @@ export default function SettingsModal({ visible, onClose }) {
     currentView === "menu"
       ? "Settings"
       : currentView === "about"
-      ? "About Us"
-      : "Privacy Policy";
+        ? "About Us"
+        : currentView === "privacy"
+          ? "Privacy Policy"
+          : "Reminder Sound";
 
   const renderContent = () => {
     switch (currentView) {

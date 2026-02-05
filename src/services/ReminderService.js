@@ -35,6 +35,13 @@ export const ReminderService = {
     }
   },
 
+  getChannelIdForSound(soundId) {
+    const validSound =
+      REMINDER_CONFIG.SOUNDS.find((s) => s.id === soundId) ||
+      REMINDER_CONFIG.SOUNDS[0];
+    return `ummat_reminders_${validSound.id}`;
+  },
+
   async addReminder(reminder) {
     try {
       const hasPermission = await NotificationManager.requestPermissions();
@@ -51,6 +58,8 @@ export const ReminderService = {
 
       const notificationIds = [];
 
+      const channelId = this.getChannelIdForSound(reminder.soundId);
+
       for (const alertType of alerts) {
         const offset = getAlertOffset(alertType);
         const triggerDate = new Date(eventDate.getTime() - offset);
@@ -66,6 +75,7 @@ export const ReminderService = {
               snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
               originalAlert: alertType,
             },
+            channelId,
           );
           notificationIds.push(notificationId);
         }
@@ -124,6 +134,8 @@ export const ReminderService = {
 
       const newNotificationIds = [];
 
+      const channelId = this.getChannelIdForSound(reminder.soundId);
+
       for (const alertType of alerts) {
         const offset = getAlertOffset(alertType);
         const triggerDate = new Date(eventDate.getTime() - offset);
@@ -138,6 +150,7 @@ export const ReminderService = {
               snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
               originalAlert: alertType,
             },
+            channelId,
           );
           newNotificationIds.push(notificationId);
         }
@@ -194,11 +207,16 @@ export const ReminderService = {
 
       const triggerDate = new Date(Date.now() + snoozeMinutes * 60 * 1000);
 
+      // Use the soundID from the original data if available, or default
+      const soundId = data && data.soundId ? data.soundId : "default";
+      const channelId = this.getChannelIdForSound(soundId);
+
       const notificationId = await NotificationManager.schedule(
         `${title} (Snoozed)`,
         body,
         triggerDate,
         { ...data, isSnooze: true },
+        channelId,
       );
 
       // We do NOT update the event date. We just track this extra notification ID.
@@ -249,6 +267,9 @@ export const ReminderService = {
         const alerts = reminder.alerts || [ALERT_TYPES.AT_TIME];
         const newNotificationIds = [];
 
+        // Determine channel for this reminder
+        const channelId = this.getChannelIdForSound(reminder.soundId);
+
         for (const alertType of alerts) {
           const offset = getAlertOffset(alertType);
           const triggerDate = new Date(eventDate.getTime() - offset);
@@ -263,6 +284,7 @@ export const ReminderService = {
                 snoozeMinutes: (reminder.snoozeMinutes || 10).toString(),
                 originalAlert: alertType,
               },
+              channelId,
             );
             newNotificationIds.push(notificationId);
           }
