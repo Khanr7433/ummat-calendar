@@ -9,7 +9,7 @@ export const REMINDER_CONFIG = {
   ACTION_CATEGORY: "alarm-actions",
 
   SOUNDS: [
-    { id: "default", label: "Classic Alarm", filename: "alarm_clock.ogg" },
+    { id: "default", label: "Classic Alarm", filename: "custom_alarm_1.ogg" },
     {
       id: "digital",
       label: "Digital Watch",
@@ -18,20 +18,25 @@ export const REMINDER_CONFIG = {
     {
       id: "mechanical",
       label: "Mechanical Clock",
-      filename: "mechanical_clock_ring.ogg",
+      filename: "custom_morning_clock.ogg",
     },
     {
       id: "bell",
       label: "Bell Ringing",
-      filename: "medium_bell_ringing_near.ogg",
+      filename: "custom_classic_alarm.ogg",
     },
-    { id: "spaceship", label: "Spaceship", filename: "spaceship_alarm.ogg" },
+    {
+      id: "spaceship",
+      label: "Spaceship",
+      filename: "custom_vintage_warning.ogg",
+    },
     // Modern Sounds
-    { id: "melody", label: "Melody", filename: "melody.ogg" },
-    { id: "soft_chime", label: "Soft Chime", filename: "soft_chime.ogg" },
-    { id: "galaxy", label: "Galaxy", filename: "galaxy.ogg" },
-    { id: "sunrise", label: "Sunrise", filename: "sunrise.ogg" },
-    { id: "minimal", label: "Minimal", filename: "minimal.ogg" },
+    { id: "melody", label: "Melody", filename: "custom_hall_alert.ogg" },
+    {
+      id: "soft_chime",
+      label: "Soft Chime",
+      filename: "custom_alert_alarm.ogg",
+    },
   ],
 
   BASE_CHANNEL_SETTINGS: {

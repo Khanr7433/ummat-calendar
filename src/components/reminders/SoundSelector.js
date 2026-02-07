@@ -17,16 +17,13 @@ import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 
 // Map sound IDs to local assets
 const SOUND_FILES = {
-  default: require("../../../assets/sounds/alarm_clock.ogg"),
+  default: require("../../../assets/sounds/custom_alarm_1.ogg"),
   digital: require("../../../assets/sounds/digital_watch_alarm_long.ogg"),
-  mechanical: require("../../../assets/sounds/mechanical_clock_ring.ogg"),
-  bell: require("../../../assets/sounds/medium_bell_ringing_near.ogg"),
-  spaceship: require("../../../assets/sounds/spaceship_alarm.ogg"),
-  melody: require("../../../assets/sounds/melody.ogg"),
-  soft_chime: require("../../../assets/sounds/soft_chime.ogg"),
-  galaxy: require("../../../assets/sounds/galaxy.ogg"),
-  sunrise: require("../../../assets/sounds/sunrise.ogg"),
-  minimal: require("../../../assets/sounds/minimal.ogg"),
+  mechanical: require("../../../assets/sounds/custom_morning_clock.ogg"),
+  bell: require("../../../assets/sounds/custom_classic_alarm.ogg"),
+  spaceship: require("../../../assets/sounds/custom_vintage_warning.ogg"),
+  melody: require("../../../assets/sounds/custom_hall_alert.ogg"),
+  soft_chime: require("../../../assets/sounds/custom_alert_alarm.ogg"),
 };
 
 const SoundSelector = forwardRef(({ selectedSoundId, onSelect }, ref) => {
