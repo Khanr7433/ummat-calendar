@@ -36,6 +36,27 @@ export default function PrivacyView({ onBack }) {
           uninstall the application.
         </Text>
 
+        <Text style={styles.sectionTitle}>Location Information</Text>
+        <Text style={styles.paragraph}>
+          We request access to your device's location to provide accurate
+          Gregorian and Hijri dates specific to your region. This is crucial for
+          precise moon sighting calculations.
+        </Text>
+        <Text style={styles.paragraph}>
+          Your location coordinates are sent securely to the **Aladhan API**
+          strictly for the purpose of fetching calendar data. We do not track,
+          store, or share your location history. If you choose not to grant
+          location permission, the app defaults to a standard location (India)
+          for date calculations.
+        </Text>
+
+        <Text style={styles.sectionTitle}>Third-Party Services</Text>
+        <Text style={styles.paragraph}>
+          **Aladhan API**: We use this service to fetch accurate Islamic
+          calendar data. Their use of data is governed by their own privacy
+          policy.
+        </Text>
+
         <Text style={styles.sectionTitle}>App Permissions</Text>
         <Text style={styles.paragraph}>
           To provide full functionality, the app may request the following
@@ -45,8 +66,12 @@ export default function PrivacyView({ onBack }) {
         <Text style={styles.paragraph}>
           We request permission to send local notifications. This is strictly
           used to deliver the reminders you have scheduled within the app (e.g.,
-          calendar events, custom reminders). These notifications are generated
-          locally on your device.
+          calendar events, custom reminders) and daily date updates. These
+          notifications are generated locally on your device.
+        </Text>
+        <Text style={styles.subTitle}>Location</Text>
+        <Text style={styles.paragraph}>
+          Used only to calculate accurate local dates.
         </Text>
         <Text style={styles.subTitle}>Alarms & Reminders</Text>
         <Text style={styles.paragraph}>
