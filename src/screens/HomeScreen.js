@@ -1,12 +1,13 @@
-import React, { useRef, useState, useCallback, useEffect } from "react";
+import React, { useRef, useCallback } from "react";
 import { View, FlatList, StyleSheet, Dimensions } from "react-native";
+import { useApp } from "../context/AppContext";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import {
-  useSafeAreaInsets,
   SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { COLORS } from "../constants/colors";
 
-import calendarData from "../data/calendarData";
 import CalendarItem from "../components/CalendarItem";
 import MonthSelectorModal from "../components/MonthSelectorModal";
 import Header from "../components/Header";
@@ -19,27 +20,36 @@ const { width } = Dimensions.get("window");
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const flatListRef = useRef(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [settingsVisible, setSettingsVisible] = useState(false);
-  const [remindersVisible, setRemindersVisible] = useState(false);
-  const [showBack, setShowBack] = useState(false);
 
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const initialMonthIndex = currentYear >= 2026 ? currentDate.getMonth() : 0;
+  const {
+    // State
+    currentMonthIndex,
+    isScrollEnabled,
+    showBack,
+    isMonthSelectorVisible,
+    isSettingsVisible,
+    isRemindersVisible,
+    calendarData,
 
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(initialMonthIndex);
-  const [isScrollEnabled, setIsScrollEnabled] = useState(true);
+    // Actions
+    setCurrentMonthIndex,
+    setIsScrollEnabled,
+    openMonthSelector,
+    closeMonthSelector,
+    openSettings,
+    closeSettings,
+    openReminders,
+    closeReminders,
+    toggleFlip,
+    setMonthIndex,
+  } = useApp();
+
+  // Scroll to month when selected from modal (if needed effectively)
+  // Note: We handle the scroll in onSelectMonth wrapper below.
 
   const renderItem = useCallback(
-    ({ item }) => (
-      <CalendarItem
-        item={item}
-        showBack={showBack}
-        onZoomChange={setIsScrollEnabled}
-      />
-    ),
-    [showBack],
+    ({ item }) => <CalendarItem item={item} />,
+    [],
   );
 
   const keyExtractor = useCallback((item) => item.id.toString(), []);
@@ -47,28 +57,24 @@ export default function HomeScreen() {
   const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / width);
-    setCurrentMonthIndex(index);
+    // Only update if changed to avoid unnecessary re-renders
+    if (index !== currentMonthIndex) {
+      setCurrentMonthIndex(index);
+    }
   };
 
   const onSelectMonth = (index) => {
-    setModalVisible(false);
-
+    closeMonthSelector();
     if (index >= 0 && index < calendarData.length) {
-      flatListRef.current?.scrollToIndex({ index, animated: true });
-      setCurrentMonthIndex(index);
+      if (flatListRef.current) {
+        flatListRef.current.scrollToIndex({ index, animated: true });
+      }
+      setMonthIndex(index);
     }
   };
 
   const currentItem = calendarData[currentMonthIndex];
   const hasBackImage = currentItem?.backImage?.uri;
-
-  const handleSelectMonthPress = useCallback(() => setModalVisible(true), []);
-  const handleSettingsPress = useCallback(() => setSettingsVisible(true), []);
-  const handleRemindersPress = useCallback(() => setRemindersVisible(true), []);
-  const handleFlipToggle = useCallback(
-    () => setShowBack(!showBack),
-    [showBack],
-  );
 
   return (
     <SafeAreaView style={styles.container} edges={["left", "right", "bottom"]}>
@@ -79,12 +85,9 @@ export default function HomeScreen() {
       />
 
       <Header
-        monthName={calendarData[currentMonthIndex]?.monthName}
-        onSelectMonthPress={handleSelectMonthPress}
-        showBack={showBack}
-        onFlipToggle={handleFlipToggle}
-        hasBackImage={hasBackImage}
         topInset={insets.top}
+        monthName={currentItem?.monthName}
+        hasBackImage={hasBackImage}
       />
 
       <View style={styles.contentContainer}>
@@ -100,13 +103,15 @@ export default function HomeScreen() {
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          initialScrollIndex={initialMonthIndex}
+          initialScrollIndex={currentMonthIndex}
           initialNumToRender={3}
           maxToRenderPerBatch={5}
           windowSize={5}
           removeClippedSubviews={true}
           keyExtractor={keyExtractor}
-          extraData={showBack}
+          // Remove extraData={showBack} as CalendarItem uses Context now (will be updated next)
+          // actually CalendarItem is pure/memo, so it might need context usage to re-render?
+          // We will update CalendarItem to use context, so it will re-render on context change.
           onScroll={handleScroll}
           scrollEventThrottle={16}
           getItemLayout={(data, index) => ({
@@ -118,28 +123,19 @@ export default function HomeScreen() {
         />
       </View>
 
-      <BottomNav
-        onSettingsPress={handleSettingsPress}
-        onRemindersPress={handleRemindersPress}
-      />
+      <BottomNav />
 
       <MonthSelectorModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
+        visible={isMonthSelectorVisible}
+        onClose={closeMonthSelector}
         data={calendarData}
         currentMonthIndex={currentMonthIndex}
         onSelectMonth={onSelectMonth}
       />
 
-      <SettingsModal
-        visible={settingsVisible}
-        onClose={() => setSettingsVisible(false)}
-      />
+      <SettingsModal visible={isSettingsVisible} onClose={closeSettings} />
 
-      <RemindersModal
-        visible={remindersVisible}
-        onClose={() => setRemindersVisible(false)}
-      />
+      <RemindersModal visible={isRemindersVisible} onClose={closeReminders} />
     </SafeAreaView>
   );
 }
@@ -147,7 +143,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
   contentContainer: {
     flex: 1,

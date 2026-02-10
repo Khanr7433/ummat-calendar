@@ -23,25 +23,36 @@ export default function PrivacyView({ onBack }) {
           app "Ummat Calendar" handles your data.
         </Text>
 
-        <Text style={styles.sectionTitle}>Data Collection</Text>
+        <Text style={styles.sectionTitle}>Data Collection & Usage</Text>
         <Text style={styles.paragraph}>
-          This application does not collect, store, or transmit any personal
-          user data. All calendar calculations are performed locally on your
-          device.
+          The "Ummat Calendar" application is designed with your privacy as a
+          priority. We do not collect, transmit, or store any personal data on
+          external servers.
+        </Text>
+        <Text style={styles.paragraph}>
+          All data, including your reminders, preferences, and settings, is
+          stored locally on your device using your device's internal storage.
+          This data remains completely under your control and is deleted if you
+          uninstall the application.
         </Text>
 
-        <Text style={styles.sectionTitle}>Permissions</Text>
+        <Text style={styles.sectionTitle}>App Permissions</Text>
         <Text style={styles.paragraph}>
-          The app requires minimal permissions to function correctly.
+          To provide full functionality, the app may request the following
+          permissions:
         </Text>
+        <Text style={styles.subTitle}>Notifications</Text>
         <Text style={styles.paragraph}>
-          **Notifications**: We request permission to send notifications solely
-          to provide the reminders you schedule. These are managed locally on
-          your device.
+          We request permission to send local notifications. This is strictly
+          used to deliver the reminders you have scheduled within the app (e.g.,
+          calendar events, custom reminders). These notifications are generated
+          locally on your device.
         </Text>
+        <Text style={styles.subTitle}>Alarms & Reminders</Text>
         <Text style={styles.paragraph}>
-          We do not access your contacts, files, or location unless explicitly
-          required for a feature and approved by you.
+          On Android 12 and above, we may request permission to schedule exact
+          alarms to ensure your reminders are delivered precisely at the time
+          you set.
         </Text>
 
         <Text style={styles.sectionTitle}>Contact</Text>
@@ -89,5 +100,11 @@ const styles = StyleSheet.create({
   paragraph: {
     ...TOPOGRAPHY.body,
     marginBottom: 12,
+  },
+  subTitle: {
+    ...TOPOGRAPHY.h3,
+    fontSize: 16,
+    marginBottom: 4,
+    marginTop: 8,
   },
 });

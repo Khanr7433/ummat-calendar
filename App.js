@@ -3,6 +3,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import CustomSplashScreen from "./src/screens/CustomSplashScreen";
 import HomeScreen from "./src/screens/HomeScreen";
+import { AppProvider } from "./src/context/AppContext";
 import { ReminderService } from "./src/services/ReminderService";
 import { checkAppUpdate } from "./src/services/InAppUpdate";
 
@@ -21,7 +22,9 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <HomeScreen />
+      <AppProvider>
+        <HomeScreen />
+      </AppProvider>
     </SafeAreaProvider>
   );
 }

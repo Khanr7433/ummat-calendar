@@ -28,6 +28,7 @@ export default function DateTimeSection({ date, onDatePress, onTimePress }) {
             {date.toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
+              hour12: true,
             })}
           </Text>
         </View>

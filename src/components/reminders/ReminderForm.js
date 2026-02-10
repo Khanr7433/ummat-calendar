@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -12,7 +11,6 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { TOPOGRAPHY } from "../../constants/typography";
 import { COLORS } from "../../constants/colors";
-import { ALERT_TYPES } from "../../constants/reminderConfig";
 import AppButton from "../ui/AppButton";
 import AppInput from "../ui/AppInput";
 import DateTimeSection from "./DateTimeSection";
@@ -20,22 +18,39 @@ import AlertsSection from "./AlertsSection";
 import SnoozeSection from "./SnoozeSection";
 import SoundSelector from "./SoundSelector";
 
+import { useReminderForm } from "../../hooks/useReminderForm";
+
 export default function ReminderForm({
   initialData,
   onSave,
   onCancel,
   hasUnsavedChangesRef,
 }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState(new Date());
-  const [snoozeMinutes, setSnoozeMinutes] = useState(10);
+  const { state, actions } = useReminderForm(initialData, hasUnsavedChangesRef);
+
+  const {
+    title,
+    description,
+    date,
+    snoozeMinutes,
+    selectedAlerts,
+    customDays,
+    soundId,
+  } = state;
+
+  const {
+    setTitle,
+    setDescription,
+    setDate,
+    setSnoozeMinutes,
+    setSoundId,
+    handleToggleAlert,
+    handleCustomDaysChange,
+    getFormData,
+  } = actions;
+
   const [showPicker, setShowPicker] = useState(false);
   const [mode, setMode] = useState("date");
-  const [selectedAlerts, setSelectedAlerts] = useState([ALERT_TYPES.AT_TIME]);
-  const [customDays, setCustomDays] = useState("1");
-  const [soundId, setSoundId] = useState("default");
-
   const soundSelectorRef = React.useRef(null);
 
   const handleInteraction = () => {
@@ -44,95 +59,12 @@ export default function ReminderForm({
     }
   };
 
-  useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title);
-      setDescription(initialData.description || "");
-      setDate(new Date(initialData.date));
-      setSnoozeMinutes(initialData.snoozeMinutes || 10);
-      setSoundId(initialData.soundId || "default");
-
-      // Parse initial alerts
-      let alerts = initialData.alerts || [ALERT_TYPES.AT_TIME];
-      setSelectedAlerts(alerts);
-
-      const customAlert = alerts.find((a) =>
-        a.startsWith(ALERT_TYPES.CUSTOM_PREFIX),
-      );
-      if (customAlert) {
-        setCustomDays(customAlert.split(":")[1]);
-      }
-    }
-  }, [initialData]);
-
-  // Update parent ref for unsaved changes check
-  useEffect(() => {
-    if (hasUnsavedChangesRef) {
-      const isDirty = checkIsDirty();
-      hasUnsavedChangesRef.current = isDirty;
-    }
-  }, [title, description, date, snoozeMinutes, selectedAlerts, customDays]);
-
-  const checkIsDirty = () => {
-    if (!initialData) {
-      return title.trim().length > 0 || description.trim().length > 0;
-    }
-    const isTitleChanged = title !== initialData.title;
-    const isDescChanged = description !== (initialData.description || "");
-    const isDateChanged =
-      date.getTime() !== new Date(initialData.date).getTime();
-    const isSnoozeChanged = snoozeMinutes !== (initialData.snoozeMinutes || 10);
-    const isSoundChanged = soundId !== (initialData.soundId || "default");
-
-    // Check alerts change
-    const initialAlerts = initialData.alerts || [ALERT_TYPES.AT_TIME];
-    const isAlertsChanged =
-      JSON.stringify(selectedAlerts.sort()) !==
-      JSON.stringify(initialAlerts.sort());
-
-    // Check custom days change if custom is selected
-    const initialCustom =
-      initialAlerts
-        .find((a) => a.startsWith(ALERT_TYPES.CUSTOM_PREFIX))
-        ?.split(":")[1] || "1";
-    const isCustomChanged =
-      selectedAlerts.some((a) => a.startsWith(ALERT_TYPES.CUSTOM_PREFIX)) &&
-      customDays !== initialCustom;
-
-    return (
-      isTitleChanged ||
-      isDescChanged ||
-      isDateChanged ||
-      isSnoozeChanged ||
-      isAlertsChanged ||
-      isCustomChanged ||
-      isSoundChanged
-    );
-  };
-
   const handleSave = () => {
     if (!title.trim()) {
       Alert.alert("Error", "Please enter a title");
       return;
     }
-
-    // Precision Fix: Zero out seconds
-    const scheduledDate = new Date(date);
-    scheduledDate.setSeconds(0);
-    scheduledDate.setMilliseconds(0);
-
-    onSave({
-      title,
-      description,
-      date: scheduledDate.toISOString(),
-      snoozeMinutes,
-      soundId,
-      alerts: selectedAlerts.map((a) =>
-        a === ALERT_TYPES.CUSTOM
-          ? `${ALERT_TYPES.CUSTOM_PREFIX}${customDays}`
-          : a,
-      ),
-    });
+    onSave(getFormData());
   };
 
   const onChangeDate = (event, selectedDate) => {
@@ -146,44 +78,6 @@ export default function ReminderForm({
     handleInteraction();
     setShowPicker(true);
     setMode(currentMode);
-  };
-
-  const handleToggleAlert = (optionId) => {
-    handleInteraction();
-    if (optionId === ALERT_TYPES.AT_TIME) {
-      const isSelected = selectedAlerts.includes(optionId);
-      if (isSelected && selectedAlerts.length === 1) return;
-    }
-
-    setSelectedAlerts((prev) => {
-      if (optionId === ALERT_TYPES.CUSTOM) {
-        const customIndex = prev.findIndex((a) =>
-          a.startsWith(ALERT_TYPES.CUSTOM_PREFIX),
-        );
-        if (customIndex >= 0) {
-          return prev.filter((_, i) => i !== customIndex);
-        } else {
-          return [...prev, `${ALERT_TYPES.CUSTOM_PREFIX}${customDays}`];
-        }
-      }
-
-      if (prev.includes(optionId)) {
-        return prev.filter((id) => id !== optionId);
-      } else {
-        return [...prev, optionId];
-      }
-    });
-  };
-
-  const handleCustomDaysChange = (numeric) => {
-    setCustomDays(numeric);
-    setSelectedAlerts((prev) =>
-      prev.map((a) =>
-        a.startsWith(ALERT_TYPES.CUSTOM_PREFIX)
-          ? `${ALERT_TYPES.CUSTOM_PREFIX}${numeric}`
-          : a,
-      ),
-    );
   };
 
   return (
@@ -236,7 +130,10 @@ export default function ReminderForm({
         <Text style={styles.sectionHeader}>Notification Time</Text>
         <AlertsSection
           selectedAlerts={selectedAlerts}
-          onToggleAlert={handleToggleAlert}
+          onToggleAlert={(id) => {
+            handleInteraction();
+            handleToggleAlert(id);
+          }}
           customDays={customDays}
           onCustomDaysChange={handleCustomDaysChange}
         />

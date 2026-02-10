@@ -10,12 +10,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../constants/colors";
 import { TOPOGRAPHY } from "../constants/typography";
 
-export default function BottomNav({ onRemindersPress, onSettingsPress }) {
+import { useApp } from "../context/AppContext";
+
+export default function BottomNav() {
+  const { openReminders, openSettings } = useApp();
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.navItem}
-        onPress={onRemindersPress}
+        onPress={openReminders}
         activeOpacity={0.7}
       >
         <Ionicons
@@ -30,7 +33,7 @@ export default function BottomNav({ onRemindersPress, onSettingsPress }) {
 
       <TouchableOpacity
         style={styles.navItem}
-        onPress={onSettingsPress}
+        onPress={openSettings}
         activeOpacity={0.7}
       >
         <Ionicons

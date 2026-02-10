@@ -4,17 +4,9 @@ import { REMINDER_CONFIG, ALERT_TYPES } from "../constants/reminderConfig";
 
 const { STORAGE_KEY } = REMINDER_CONFIG;
 
-const getAlertOffset = (alertType) => {
-  if (alertType === ALERT_TYPES.AT_TIME) return 0;
-  if (alertType === ALERT_TYPES.ONE_DAY_BEFORE) return 24 * 60 * 60 * 1000;
-  if (alertType === ALERT_TYPES.TWO_DAYS_BEFORE) return 48 * 60 * 60 * 1000;
-  if (alertType === ALERT_TYPES.ONE_WEEK_BEFORE) return 7 * 24 * 60 * 60 * 1000;
-  if (alertType.startsWith(ALERT_TYPES.CUSTOM_PREFIX)) {
-    const days = parseInt(alertType.split(":")[1], 10);
-    return days * 24 * 60 * 60 * 1000;
-  }
-  return 0;
-};
+import { getAlertOffset } from "../utils/reminderUtils";
+
+// const { STORAGE_KEY } = REMINDER_CONFIG; (keeping this line implicitly by only replacing what's needed)
 
 export const ReminderService = {
   async getReminders() {

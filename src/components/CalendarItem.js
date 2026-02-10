@@ -2,11 +2,13 @@ import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { ReactNativeZoomableView } from "@dudigital/react-native-zoomable-view";
 import React, { memo, useState, useMemo } from "react";
+import { useApp } from "../context/AppContext";
 import { useScreenDimensions } from "../hooks/useScreenDimensions";
 import { COLORS } from "../constants/colors";
 import { LAYOUT } from "../constants/layout";
 
-const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
+const CalendarItem = memo(({ item }) => {
+  const { showBack, setIsScrollEnabled } = useApp();
   const { width, height, isSmallDevice } = useScreenDimensions();
   const [containerHeight, setContainerHeight] = useState(0);
   const [aspectRatio, setAspectRatio] = useState(null);
@@ -83,9 +85,9 @@ const CalendarItem = memo(({ item, showBack, onZoomChange }) => {
         style={styles.zoomableView}
         onZoomAfter={(event, gestureState, zoomableViewEventObject) => {
           if (zoomableViewEventObject.zoomLevel > 1) {
-            onZoomChange(false);
+            setIsScrollEnabled(false);
           } else {
-            onZoomChange(true);
+            setIsScrollEnabled(true);
           }
         }}
         movementSensibility={1.3}

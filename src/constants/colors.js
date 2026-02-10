@@ -7,7 +7,7 @@ export const COLORS = {
   // Neutral
   white: "#FFFFFF",
   black: "#000000",
-  background: "#F9FAFB", // Gray-50
+  background: "#F2F2F7", // System Gray 6 (Off-white)
   surface: "#FFFFFF",
 
   // Text

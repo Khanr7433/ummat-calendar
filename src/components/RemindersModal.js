@@ -6,8 +6,12 @@ import {
   Alert,
   BackHandler,
   StyleSheet,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from "react-native";
 import { ReminderService } from "../services/ReminderService";
+import { sortReminders } from "../utils/reminderUtils";
 
 import ModalContainer from "./ui/ModalContainer";
 import ModalHeader from "./ui/ModalHeader";
@@ -22,6 +26,14 @@ export default function RemindersModal({ visible, onClose }) {
 
   // Ref to track dirty state in child form
   const hasUnsavedChangesRef = useRef(false);
+
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      if (UIManager.setLayoutAnimationEnabledExperimental) {
+        UIManager.setLayoutAnimationEnabledExperimental(true);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (visible) {
@@ -52,21 +64,9 @@ export default function RemindersModal({ visible, onClose }) {
 
   const loadReminders = async () => {
     const data = await ReminderService.getReminders();
-    const now = new Date();
-
-    data.sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      const isExpiredA = dateA < now;
-      const isExpiredB = dateB < now;
-
-      if (isExpiredA === isExpiredB) {
-        return dateA - dateB;
-      }
-      return isExpiredA ? 1 : -1;
-    });
-
-    setReminders(data);
+    const sortedData = sortReminders(data);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setReminders(sortedData);
   };
 
   const handleEditPress = (reminder) => {

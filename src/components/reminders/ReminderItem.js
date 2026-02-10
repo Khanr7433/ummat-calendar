@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TOPOGRAPHY } from "../../constants/typography";
 import { COLORS } from "../../constants/colors";
-import { ALERT_TYPES } from "../../constants/reminderConfig";
+import { formatReminderTime, getAlertLabel } from "../../utils/reminderUtils";
 
 export default function ReminderItem({ item, onEdit, onDelete }) {
   const isExpired = new Date(item.date) < new Date();
@@ -38,15 +38,7 @@ export default function ReminderItem({ item, onEdit, onDelete }) {
         <View style={styles.metaRow}>
           <View style={styles.timeTag}>
             <Ionicons name="time" size={12} color={COLORS.textSecondary} />
-            <Text style={styles.timeText}>
-              {new Date(item.date).toLocaleString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
+            <Text style={styles.timeText}>{formatReminderTime(item.date)}</Text>
           </View>
 
           {isExpired && (
@@ -60,17 +52,7 @@ export default function ReminderItem({ item, onEdit, onDelete }) {
         {item.alerts && item.alerts.length > 0 && !isExpired && (
           <View style={styles.alertsRow}>
             {item.alerts.map((alert, index) => {
-              let label = "";
-              if (alert === ALERT_TYPES.AT_TIME) label = "At time";
-              else if (alert === ALERT_TYPES.ONE_DAY_BEFORE)
-                label = "1 day before";
-              else if (alert === ALERT_TYPES.TWO_DAYS_BEFORE)
-                label = "2 days before";
-              else if (alert === ALERT_TYPES.ONE_WEEK_BEFORE)
-                label = "1 week before";
-              else if (alert.startsWith(ALERT_TYPES.CUSTOM_PREFIX))
-                label = `${alert.split(":")[1]} days before`;
-
+              const label = getAlertLabel(alert);
               return (
                 <View key={index} style={styles.alertBadge}>
                   <Text style={styles.alertBadgeText}>{label}</Text>
@@ -84,7 +66,8 @@ export default function ReminderItem({ item, onEdit, onDelete }) {
       <TouchableOpacity
         onPress={() => onDelete(item.id)}
         style={styles.deleteButton}
-        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+        activeOpacity={0.6}
       >
         <Ionicons name="trash-outline" size={20} color={COLORS.danger} />
       </TouchableOpacity>

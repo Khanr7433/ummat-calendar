@@ -4,19 +4,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { TOPOGRAPHY } from "../constants/typography";
 import { COLORS } from "../constants/colors";
 
-function Header({
-  monthName,
-  onSelectMonthPress,
-  showBack,
-  onFlipToggle,
-  hasBackImage,
-  topInset,
-}) {
+import { useApp } from "../context/AppContext";
+
+function Header({ monthName, hasBackImage, topInset }) {
+  const { openMonthSelector, showBack, toggleFlip } = useApp();
   return (
     <View style={[styles.header, { paddingTop: topInset + 12 }]}>
       <TouchableOpacity
         style={styles.selectorButton}
-        onPress={onSelectMonthPress}
+        onPress={openMonthSelector}
         activeOpacity={0.6}
       >
         <Text style={styles.selectorText}>{monthName || "Select Month"}</Text>
@@ -27,7 +23,7 @@ function Header({
         {hasBackImage && (
           <TouchableOpacity
             style={styles.flipButton}
-            onPress={onFlipToggle}
+            onPress={toggleFlip}
             activeOpacity={0.7}
           >
             <Ionicons
@@ -51,19 +47,25 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.96)",
+    backgroundColor: "rgba(255, 255, 255, 0.98)",
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     zIndex: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 3,
   },
 
   selectorButton: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+    paddingVertical: 4,
   },
   selectorText: {
     ...TOPOGRAPHY.h3,
