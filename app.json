@@ -3,7 +3,7 @@
     "name": "Ummat Calendar",
     "slug": "ummat-calendar",
     "scheme": "ummat-calendar",
-    "version": "1.1.4",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,7 +20,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.khanr7433.ummatcalendar",
-      "versionCode": 7,
+      "versionCode": 8,
       "permissions": ["SCHEDULE_EXACT_ALARM", "USE_EXACT_ALARM", "WAKE_LOCK"]
     },
     "web": {
