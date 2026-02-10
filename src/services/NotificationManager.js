@@ -56,7 +56,14 @@ class NotificationManager {
     }
   }
 
-  async schedule(title, body, triggerDate, data = {}, channelId = null) {
+  async schedule(
+    title,
+    body,
+    triggerDate,
+    data = {},
+    channelId = null,
+    identifier = null,
+  ) {
     try {
       // Default to the 'default' sound channel if none provided
       const targetChannelId = channelId || REMINDER_CONFIG.DEFAULT_CHANNEL_ID;
@@ -75,6 +82,7 @@ class NotificationManager {
           categoryIdentifier: REMINDER_CONFIG.ACTION_CATEGORY,
         },
         trigger,
+        identifier,
       });
     } catch (error) {
       console.error("[NotificationManager] Schedule Failed:", error);

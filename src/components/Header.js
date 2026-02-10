@@ -7,17 +7,28 @@ import { COLORS } from "../constants/colors";
 import { useApp } from "../context/AppContext";
 
 function Header({ monthName, hasBackImage, topInset }) {
-  const { openMonthSelector, showBack, toggleFlip } = useApp();
+  const { openMonthSelector, showBack, toggleFlip, headerDate } = useApp();
   return (
     <View style={[styles.header, { paddingTop: topInset + 12 }]}>
-      <TouchableOpacity
-        style={styles.selectorButton}
-        onPress={openMonthSelector}
-        activeOpacity={0.6}
-      >
-        <Text style={styles.selectorText}>{monthName || "Select Month"}</Text>
-        <Ionicons name="chevron-down" size={18} color={COLORS.primary} />
-      </TouchableOpacity>
+      <View style={styles.leftContainer}>
+        <TouchableOpacity
+          style={styles.selectorButton}
+          onPress={openMonthSelector}
+          activeOpacity={0.6}
+        >
+          <Text style={styles.selectorText}>{monthName || "Select Month"}</Text>
+          <Ionicons name="chevron-down" size={18} color={COLORS.primary} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.centerContainer}>
+        {headerDate?.hijri ? (
+          <View style={styles.dateContainer}>
+            <Text style={styles.hijriDate}>{headerDate.hijri}</Text>
+            <Text style={styles.gregorianDate}>{headerDate.gregorian}</Text>
+          </View>
+        ) : null}
+      </View>
 
       <View style={styles.rightContainer}>
         {hasBackImage && (
@@ -60,6 +71,37 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
   },
+  leftContainer: {
+    flex: 1,
+    alignItems: "flex-start",
+  },
+  centerContainer: {
+    flex: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dateContainer: {
+    alignItems: "center",
+  },
+  hijriDate: {
+    ...TOPOGRAPHY.label,
+    color: COLORS.primary,
+    fontWeight: "700",
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  gregorianDate: {
+    ...TOPOGRAPHY.label,
+    color: COLORS.primary,
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  rightContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+  },
 
   selectorButton: {
     flexDirection: "row",
@@ -71,24 +113,20 @@ const styles = StyleSheet.create({
     ...TOPOGRAPHY.h3,
     color: COLORS.textPrimary,
     letterSpacing: -0.5,
-  },
-
-  rightContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    fontSize: 16, // Reduce slightly if needed to fit
   },
 
   flipButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     backgroundColor: "#EEF2FF",
     borderRadius: 24,
-    marginLeft: 8,
+    // marginLeft: 8, // No longer needed with flex/align
   },
   flipButtonText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: "600",
     color: COLORS.primary,
   },

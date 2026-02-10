@@ -1,5 +1,13 @@
-import React, { createContext, useState, useContext, useCallback } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useCallback,
+  useEffect,
+} from "react";
 import calendarData from "../data/calendarData";
+import DailyNotificationService from "../services/DailyNotificationService";
+import DateService from "../services/DateService";
 
 const AppContext = createContext();
 
@@ -17,6 +25,38 @@ export const AppProvider = ({ children }) => {
   const [isMonthSelectorVisible, setMonthSelectorVisible] = useState(false);
   const [isSettingsVisible, setSettingsVisible] = useState(false);
   const [isRemindersVisible, setRemindersVisible] = useState(false);
+
+  // Daily Notification State
+  const [dailyNotificationSettings, setDailyNotificationSettings] = useState({
+    isEnabled: true, // Always enabled
+    date: new Date().setHours(8, 0, 0, 0), // Default 8 AM
+    useLocation: false,
+  });
+
+  // Header Date State
+  const [headerDate, setHeaderDate] = useState({ hijri: "", gregorian: "" });
+
+  // Load settings and date on mount
+  React.useEffect(() => {
+    const loadData = async () => {
+      // 1. Load Settings
+      await DailyNotificationService.loadSettings();
+      setDailyNotificationSettings({
+        isEnabled: DailyNotificationService.isEnabled,
+        date: new Date().setHours(
+          DailyNotificationService.notificationTime.hour,
+          DailyNotificationService.notificationTime.minute,
+        ),
+        useLocation: DailyNotificationService.useLocation,
+      });
+
+      // 2. Load Header Date
+      // Always try to use location for correctness as per requirements
+      const dateData = await DateService.getDateData(new Date(), true);
+      setHeaderDate(dateData);
+    };
+    loadData();
+  }, []);
 
   // Actions
   const toggleFlip = useCallback(() => setShowBack((prev) => !prev), []);
@@ -42,6 +82,18 @@ export const AppProvider = ({ children }) => {
   const openReminders = useCallback(() => setRemindersVisible(true), []);
   const closeReminders = useCallback(() => setRemindersVisible(false), []);
 
+  const updateDailyNotificationSettings = async (settings) => {
+    const newSettings = { ...dailyNotificationSettings, ...settings };
+    setDailyNotificationSettings(newSettings);
+
+    const date = new Date(newSettings.date);
+    await DailyNotificationService.saveSettings(
+      newSettings.isEnabled,
+      { hour: date.getHours(), minute: date.getMinutes() },
+      newSettings.useLocation,
+    );
+  };
+
   const value = {
     // State
     currentMonthIndex,
@@ -65,6 +117,10 @@ export const AppProvider = ({ children }) => {
     closeSettings,
     openReminders,
     closeReminders,
+    dailyNotificationSettings,
+    dailyNotificationSettings,
+    updateDailyNotificationSettings,
+    headerDate,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

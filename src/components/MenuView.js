@@ -7,13 +7,26 @@ import {
   Image,
   Linking,
   ScrollView,
+  Switch,
+  Platform,
+  LayoutAnimation,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useApp } from "../context/AppContext";
 import { TOPOGRAPHY } from "../constants/typography";
 import { COLORS } from "../constants/colors";
 
 export default function MenuView({ onAboutPress, onPrivacyPress }) {
+  const { dailyNotificationSettings, updateDailyNotificationSettings } =
+    useApp();
+  const [showTimePicker, setShowTimePicker] = React.useState(false);
+
+  // Animate changes
+  const animate = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+  };
   const socialLinks = [
     {
       icon: "logo-youtube",
@@ -212,6 +225,23 @@ const styles = StyleSheet.create({
   menuLabel: {
     ...TOPOGRAPHY.body,
     fontWeight: "500",
+  },
+  menuSubLabel: {
+    ...TOPOGRAPHY.caption,
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  valueContainer: {
+    backgroundColor: COLORS.inputBg,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  valueText: {
+    ...TOPOGRAPHY.label,
+    fontWeight: "600",
+    color: COLORS.primary,
   },
   separator: {
     height: 1,

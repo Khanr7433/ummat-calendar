@@ -5,15 +5,20 @@ import CustomSplashScreen from "./src/screens/CustomSplashScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import { AppProvider } from "./src/context/AppContext";
 import { ReminderService } from "./src/services/ReminderService";
+import DailyNotificationService from "./src/services/DailyNotificationService";
 import { checkAppUpdate } from "./src/services/InAppUpdate";
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
-    ReminderService.initialize();
-    ReminderService.rescheduleAllReminders();
-    checkAppUpdate();
+    const init = async () => {
+      ReminderService.initialize();
+      ReminderService.rescheduleAllReminders();
+      await DailyNotificationService.refresh();
+      checkAppUpdate();
+    };
+    init();
   }, []);
 
   if (!appIsReady) {
