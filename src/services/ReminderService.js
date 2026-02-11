@@ -288,11 +288,11 @@ export const ReminderService = {
       await NotificationManager.cancelAll();
 
       const currentReminders = await this.getReminders();
-      // normalize happens in getReminders, so these have alerts array
       const now = new Date();
       const updatedReminders = [];
 
-      for (const reminder of currentReminders) {
+      // Create an array of promises for scheduling
+      const schedulePromises = currentReminders.map(async (reminder) => {
         const eventDate = new Date(reminder.date);
         const alerts = reminder.alerts || [ALERT_TYPES.AT_TIME];
         const newNotificationIds = [];
@@ -300,12 +300,12 @@ export const ReminderService = {
         // Determine channel for this reminder
         const channelId = this.getChannelIdForSound(reminder.soundId);
 
-        for (const alertType of alerts) {
+        const alertPromises = alerts.map(async (alertType) => {
           const offset = getAlertOffset(alertType);
           const triggerDate = new Date(eventDate.getTime() - offset);
 
           if (triggerDate > now) {
-            const notificationId = await NotificationManager.schedule(
+            return NotificationManager.schedule(
               reminder.title,
               reminder.description,
               triggerDate,
@@ -316,17 +316,25 @@ export const ReminderService = {
               },
               channelId,
             );
-            newNotificationIds.push(notificationId);
           }
-        }
+          return null;
+        });
 
-        updatedReminders.push({
+        const results = await Promise.all(alertPromises);
+        results.forEach((id) => {
+          if (id) newNotificationIds.push(id);
+        });
+
+        return {
           ...reminder,
           alerts,
           notificationIds: newNotificationIds,
           notificationId: null,
-        });
-      }
+        };
+      });
+
+      const processedReminders = await Promise.all(schedulePromises);
+      updatedReminders.push(...processedReminders);
 
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedReminders));
       return true;

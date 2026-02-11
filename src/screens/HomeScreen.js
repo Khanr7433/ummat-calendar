@@ -47,15 +47,27 @@ export default function HomeScreen() {
   // Scroll to month when selected from modal (if needed effectively)
   // Note: We handle the scroll in onSelectMonth wrapper below.
 
+  // Calculate dimensions once
+  const isSmallDevice = width < 375;
+  const paddingH = isSmallDevice ? 24 : 16; // 16 is LAYOUT.spacing.m
+  const maxWidth = width - paddingH;
+  // Fallback height if we don't know aspect ratio (mostly portrait A4ish)
+  // height * 0.7 or 0.8
+  const availableH =
+    Dimensions.get("window").height * (isSmallDevice ? 0.7 : 0.8);
+  const maxHeight = availableH - (isSmallDevice ? 10 : 20);
+
   const renderItem = useCallback(
     ({ item }) => (
       <CalendarItem
         item={item}
         showBack={showBack}
         setIsScrollEnabled={setIsScrollEnabled}
+        maxWidth={maxWidth}
+        maxHeight={maxHeight}
       />
     ),
-    [showBack, setIsScrollEnabled],
+    [showBack, setIsScrollEnabled, maxWidth, maxHeight],
   );
 
   const keyExtractor = useCallback((item) => item.id.toString(), []);

@@ -74,44 +74,48 @@ class DailyNotificationService {
       return;
     }
 
-    for (let i = 0; i < 30; i++) {
-      const targetDate = new Date(today);
-      targetDate.setDate(today.getDate() + i);
+    const daysToSchedule = Array.from({ length: 30 }, (_, i) => i);
 
-      // Set time
-      targetDate.setHours(
-        this.notificationTime.hour,
-        this.notificationTime.minute,
-        0,
-        0,
-      );
+    await Promise.all(
+      daysToSchedule.map(async (i) => {
+        const targetDate = new Date(today);
+        targetDate.setDate(today.getDate() + i);
 
-      // If the time for today has already passed, skip today
-      if (targetDate < new Date()) {
-        continue;
-      }
+        // Set time
+        targetDate.setHours(
+          this.notificationTime.hour,
+          this.notificationTime.minute,
+          0,
+          0,
+        );
 
-      // Fetch Date Data
-      const { gregorian, hijri } = await DateService.getDateData(
-        targetDate,
-        this.useLocation,
-      );
+        // If the time for today has already passed, skip today
+        if (targetDate < new Date()) {
+          return;
+        }
 
-      const title = "Daily Date";
-      const body = `Today is ${hijri} | ${gregorian}`;
-      const dateString = targetDate.toISOString().split("T")[0];
-      const id = `${DAILY_NOTIFICATION_ID_PREFIX}${dateString}`;
+        // Fetch Date Data
+        const { gregorian, hijri } = await DateService.getDateData(
+          targetDate,
+          this.useLocation,
+        );
 
-      // Schedule
-      await NotificationManager.schedule(
-        title,
-        body,
-        targetDate,
-        { type: "daily_date" },
-        null, // default channel
-        id,
-      );
-    }
+        const title = "Daily Date";
+        const body = `Today is ${hijri} | ${gregorian}`;
+        const dateString = targetDate.toISOString().split("T")[0];
+        const id = `${DAILY_NOTIFICATION_ID_PREFIX}${dateString}`;
+
+        // Schedule
+        await NotificationManager.schedule(
+          title,
+          body,
+          targetDate,
+          { type: "daily_date" },
+          null, // default channel
+          id,
+        );
+      }),
+    );
   }
 
   async refresh() {
