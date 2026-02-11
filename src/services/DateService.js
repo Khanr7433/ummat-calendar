@@ -60,11 +60,12 @@ class DateService {
    */
   getOfflineHijriDate(date) {
     try {
-      return new Intl.DateTimeFormat("en-GB-u-ca-islamic", {
+      const formatted = new Intl.DateTimeFormat("en-GB-u-ca-islamic", {
         day: "numeric",
         month: "long",
         year: "numeric",
       }).format(date);
+      return formatted.replace(" AH", "").trim();
     } catch (e) {
       return "";
     }
@@ -134,7 +135,10 @@ class DateService {
 
     // 3. Fallback to Offline Calculation if still empty
     if (!hijriDateStr) {
-      hijriDateStr = this.getOfflineHijriDate(date);
+      // Apply -2 adjustment for Offline mode matches the printed calendar
+      const offlineDate = new Date(date);
+      offlineDate.setDate(date.getDate() - 2);
+      hijriDateStr = this.getOfflineHijriDate(offlineDate);
     }
 
     // Gregorian Formatted
