@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { ReminderService } from "../services/ReminderService";
 import { sortReminders } from "../utils/reminderUtils";
+import { COLORS } from "../constants/colors";
 
 import ModalContainer from "./ui/ModalContainer";
 import ModalHeader from "./ui/ModalHeader";
@@ -202,6 +203,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingHorizontal: 16,
+    // Background handled by ModalContainer
   },
   listContent: {
     paddingTop: 16,
@@ -209,6 +211,6 @@ const styles = StyleSheet.create({
   },
   plusSymbol: {
     fontWeight: "700",
-    color: "#2c3e50",
+    color: COLORS.primary,
   },
 });

@@ -2,13 +2,11 @@ import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { ReactNativeZoomableView } from "@dudigital/react-native-zoomable-view";
 import React, { memo, useState, useMemo } from "react";
-import { useApp } from "../context/AppContext";
 import { useScreenDimensions } from "../hooks/useScreenDimensions";
 import { COLORS } from "../constants/colors";
 import { LAYOUT } from "../constants/layout";
 
-const CalendarItem = memo(({ item }) => {
-  const { showBack, setIsScrollEnabled } = useApp();
+const CalendarItem = memo(({ item, showBack, setIsScrollEnabled }) => {
   const { width, height, isSmallDevice } = useScreenDimensions();
   const [containerHeight, setContainerHeight] = useState(0);
   const [aspectRatio, setAspectRatio] = useState(null);

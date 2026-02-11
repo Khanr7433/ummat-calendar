@@ -6,7 +6,7 @@ import { COLORS } from "../constants/colors";
 
 import { useApp } from "../context/AppContext";
 
-function Header({ monthName, hasBackImage, topInset }) {
+function Header({ monthName, hasBackImage, topInset, onPressDate }) {
   const { openMonthSelector, showBack, toggleFlip, headerDate } = useApp();
   return (
     <View style={[styles.header, { paddingTop: topInset + 12 }]}>
@@ -23,10 +23,14 @@ function Header({ monthName, hasBackImage, topInset }) {
 
       <View style={styles.centerContainer}>
         {headerDate?.hijri ? (
-          <View style={styles.dateContainer}>
+          <TouchableOpacity
+            style={styles.dateContainer}
+            onPress={onPressDate}
+            activeOpacity={0.7}
+          >
             <Text style={styles.hijriDate}>{headerDate.hijri}</Text>
             <Text style={styles.gregorianDate}>{headerDate.gregorian}</Text>
-          </View>
+          </TouchableOpacity>
         ) : null}
       </View>
 
@@ -58,7 +62,7 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.98)",
+    backgroundColor: COLORS.background, // Off-white consistency
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     zIndex: 10,
@@ -82,19 +86,21 @@ const styles = StyleSheet.create({
   },
   dateContainer: {
     alignItems: "center",
+    paddingVertical: 4,
+    paddingHorizontal: 12,
   },
   hijriDate: {
     ...TOPOGRAPHY.label,
     color: COLORS.primary,
-    fontWeight: "700",
-    fontSize: 14,
+    fontWeight: "600",
+    fontSize: 13,
     marginBottom: 2,
   },
   gregorianDate: {
     ...TOPOGRAPHY.label,
     color: COLORS.primary,
-    fontWeight: "700",
-    fontSize: 14,
+    fontWeight: "600",
+    fontSize: 13,
   },
   rightContainer: {
     flex: 1,
@@ -121,7 +127,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: "#EEF2FF",
+    backgroundColor: COLORS.primaryBg,
     borderRadius: 24,
     // marginLeft: 8, // No longer needed with flex/align
   },

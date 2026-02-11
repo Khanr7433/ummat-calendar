@@ -48,8 +48,14 @@ export default function HomeScreen() {
   // Note: We handle the scroll in onSelectMonth wrapper below.
 
   const renderItem = useCallback(
-    ({ item }) => <CalendarItem item={item} />,
-    [],
+    ({ item }) => (
+      <CalendarItem
+        item={item}
+        showBack={showBack}
+        setIsScrollEnabled={setIsScrollEnabled}
+      />
+    ),
+    [showBack, setIsScrollEnabled],
   );
 
   const keyExtractor = useCallback((item) => item.id.toString(), []);
@@ -76,6 +82,20 @@ export default function HomeScreen() {
   const currentItem = calendarData[currentMonthIndex];
   const hasBackImage = currentItem?.backImage?.uri;
 
+  const handleDatePress = () => {
+    const today = new Date();
+    // Assuming 2026 is the target year as per data
+    const targetMonthIndex = today.getMonth(); // 0-11
+
+    if (flatListRef.current) {
+      flatListRef.current.scrollToIndex({
+        index: targetMonthIndex,
+        animated: true,
+      });
+    }
+    setMonthIndex(targetMonthIndex);
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={["left", "right", "bottom"]}>
       <ExpoStatusBar
@@ -88,6 +108,7 @@ export default function HomeScreen() {
         topInset={insets.top}
         monthName={currentItem?.monthName}
         hasBackImage={hasBackImage}
+        onPressDate={handleDatePress}
       />
 
       <View style={styles.contentContainer}>

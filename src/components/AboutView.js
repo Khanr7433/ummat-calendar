@@ -54,21 +54,26 @@ export default function AboutView({ onBack }) {
   );
 }
 
+import { COLORS } from "../constants/colors";
+
+// ...
+
 const styles = StyleSheet.create({
   subViewContainer: {
     flex: 1,
+    backgroundColor: COLORS.background, // Ensure background is set
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f1f2f6",
+    borderBottomColor: COLORS.border,
   },
   backButtonText: {
     marginLeft: 8,
     fontSize: 16,
-    color: "#2c3e50",
+    color: COLORS.textPrimary,
     fontWeight: "500",
   },
   scrollContent: {
@@ -76,18 +81,21 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...TOPOGRAPHY.h2,
-    fontSize: 20,
+    // fontSize: 20, // remove override to use typography
     marginTop: 20,
     marginBottom: 8,
     textAlign: "center",
+    color: COLORS.textPrimary,
   },
   subTitle: {
     ...TOPOGRAPHY.h3,
     marginTop: 16,
     marginBottom: 6,
+    color: COLORS.textPrimary,
   },
   paragraph: {
     ...TOPOGRAPHY.body,
     marginBottom: 12,
+    color: COLORS.textSecondary,
   },
 });

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { TOPOGRAPHY } from "../../constants/typography";
+import { COLORS } from "../../constants/colors";
 
 export default function EmptyState({ text, children }) {
   return (
@@ -19,12 +20,12 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     ...TOPOGRAPHY.h3,
-    color: "#2c3e50",
+    color: COLORS.textPrimary,
     marginBottom: 8,
   },
   emptySubText: {
     ...TOPOGRAPHY.body,
-    color: "#95a5a6",
+    color: COLORS.textTertiary,
     textAlign: "center",
   },
 });

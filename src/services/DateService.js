@@ -1,37 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Location from "expo-location";
 
 const HIJRI_API_BASE = "http://api.aladhan.com/v1/gToHCalendar";
-const CACHE_KEY_PREFIX = "gtoh_cal_kara_v2_";
+const CACHE_KEY_PREFIX = "gtoh_cal_kara_v4_"; // Forced India Location
 
 class DateService {
-  /**
-   * Get current location (latitude, longitude)
-   */
-  async getLocation() {
-    try {
-      if (!Location || !Location.requestForegroundPermissionsAsync) {
-        console.warn("Expo Location module not linked.");
-        return null;
-      }
-
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.warn("Location permission denied");
-        return null;
-      }
-
-      const location = await Location.getCurrentPositionAsync({});
-      return {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-    } catch (error) {
-      console.warn("Error getting location:", error);
-      return null;
-    }
-  }
-
   /**
    * Fetch Hijri calendar data from API based on location/date
    */
@@ -88,7 +60,7 @@ class DateService {
    */
   getOfflineHijriDate(date) {
     try {
-      return new Intl.DateTimeFormat("en-US-u-ca-islamic", {
+      return new Intl.DateTimeFormat("en-GB-u-ca-islamic", {
         day: "numeric",
         month: "long",
         year: "numeric",
@@ -114,18 +86,11 @@ class DateService {
     let monthData = await this.getCachedMonthData(year, month);
 
     if (!monthData) {
-      // If not in cache, fetch it.
-      // Try to get location for accuracy, but proceed even without it.
-      let latitude = null;
-      let longitude = null;
-
-      if (useLocation) {
-        const location = await this.getLocation();
-        if (location) {
-          latitude = location.latitude;
-          longitude = location.longitude;
-        }
-      }
+      // FORCE LOCATION: India (New Delhi)
+      // We are ignoring the user's actual location to ensure the date matches the printed
+      // Ummat Calendar which is based on Indian Moon Sighting.
+      const latitude = 28.6139;
+      const longitude = 77.209;
 
       monthData = await this.fetchHijriCalendar(
         year,

@@ -1,7 +1,8 @@
 import React from "react";
-import { Modal, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Modal, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { COLORS } from "../../constants/colors";
 
 export default function ModalContainer({ visible, onRequestClose, children }) {
   return (
@@ -11,7 +12,7 @@ export default function ModalContainer({ visible, onRequestClose, children }) {
       transparent={true}
       onRequestClose={onRequestClose}
     >
-      <StatusBar style="dark" backgroundColor="#fff" />
+      <StatusBar style="dark" backgroundColor={COLORS.background} />
       <SafeAreaView style={styles.container}>{children}</SafeAreaView>
     </Modal>
   );
@@ -20,6 +21,6 @@ export default function ModalContainer({ visible, onRequestClose, children }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
 });

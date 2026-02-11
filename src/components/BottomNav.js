@@ -12,7 +12,7 @@ import { TOPOGRAPHY } from "../constants/typography";
 
 import { useApp } from "../context/AppContext";
 
-export default function BottomNav() {
+const BottomNav = () => {
   const { openReminders, openSettings } = useApp();
   return (
     <View style={styles.container}>
@@ -45,14 +45,16 @@ export default function BottomNav() {
       </TouchableOpacity>
     </View>
   );
-}
+};
+
+export default React.memo(BottomNav);
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     justifyContent: "space-evenly",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.background,
     paddingTop: 10,
     paddingBottom: Platform.OS === "ios" ? 0 : 10,
 

@@ -190,14 +190,14 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#F0F0F0",
+    backgroundColor: COLORS.inputBg,
     alignItems: "center",
     justifyContent: "center",
   },
   headerLabel: {
     ...TOPOGRAPHY.body,
     fontWeight: "600",
-    color: COLORS.text,
+    color: COLORS.textPrimary,
   },
   dropdownContainer: {
     marginTop: 8,
@@ -216,11 +216,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#F5F5F5",
+    borderBottomColor: COLORS.inputBg,
     gap: 12,
   },
   selectedOption: {
-    backgroundColor: "#F8F9FE",
+    backgroundColor: COLORS.primaryBg,
   },
   optionIcon: {
     width: 20,
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   optionLabel: {
     ...TOPOGRAPHY.body,
     fontSize: 14,
-    color: COLORS.text,
+    color: COLORS.textPrimary,
     flex: 1,
   },
   selectedOptionLabel: {

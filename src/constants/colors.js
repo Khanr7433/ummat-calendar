@@ -3,12 +3,16 @@ export const COLORS = {
   primary: "#4F46E5", // Indigo-600
   primaryDark: "#4338CA", // Indigo-700
   primaryLight: "#818CF8", // Indigo-400
+  primaryBg: "#EEF2FF", // Indigo-50
+  primaryBorder: "#C7D2FE", // Indigo-200
+  secondary: "#A5B4FC", // Indigo-300
 
   // Neutral
   white: "#FFFFFF",
   black: "#000000",
   background: "#F2F2F7", // System Gray 6 (Off-white)
   surface: "#FFFFFF",
+  surfaceAlt: "#F9FAFB", // Gray-50
 
   // Text
   textPrimary: "#111827", // Gray-900

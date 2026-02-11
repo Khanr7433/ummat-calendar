@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TOPOGRAPHY } from "../constants/typography";
+import { COLORS } from "../constants/colors";
 
 export default function PrivacyView({ onBack }) {
   return (
@@ -38,16 +39,14 @@ export default function PrivacyView({ onBack }) {
 
         <Text style={styles.sectionTitle}>Location Information</Text>
         <Text style={styles.paragraph}>
-          We request access to your device's location to provide accurate
-          Gregorian and Hijri dates specific to your region. This is crucial for
-          precise moon sighting calculations.
+          We do NOT access your device's precise GPS location. To ensure the
+          Hijri date matches the printed Ummat Calendar (which follows Indian
+          moon sighting), the app uses a standard default location (India) for
+          all date calculations.
         </Text>
         <Text style={styles.paragraph}>
-          Your location coordinates are sent securely to the **Aladhan API**
-          strictly for the purpose of fetching calendar data. We do not track,
-          store, or share your location history. If you choose not to grant
-          location permission, the app defaults to a standard location (India)
-          for date calculations.
+          This default location is sent to the **Aladhan API** to fetch the
+          calendar data. No personal location data is collected or transmitted.
         </Text>
 
         <Text style={styles.sectionTitle}>Third-Party Services</Text>
@@ -69,10 +68,7 @@ export default function PrivacyView({ onBack }) {
           calendar events, custom reminders) and daily date updates. These
           notifications are generated locally on your device.
         </Text>
-        <Text style={styles.subTitle}>Location</Text>
-        <Text style={styles.paragraph}>
-          Used only to calculate accurate local dates.
-        </Text>
+
         <Text style={styles.subTitle}>Alarms & Reminders</Text>
         <Text style={styles.paragraph}>
           On Android 12 and above, we may request permission to schedule exact
@@ -88,7 +84,7 @@ export default function PrivacyView({ onBack }) {
         <TouchableOpacity
           onPress={() => Linking.openURL("mailto:baitululoompune@gmail.com")}
         >
-          <Text style={[styles.paragraph, { color: "#3498db" }]}>
+          <Text style={[styles.paragraph, { color: COLORS.primary }]}>
             baitululoompune@gmail.com
           </Text>
         </TouchableOpacity>
@@ -100,18 +96,19 @@ export default function PrivacyView({ onBack }) {
 const styles = StyleSheet.create({
   subViewContainer: {
     flex: 1,
+    backgroundColor: COLORS.background, // Ensure background is set
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f1f2f6",
+    borderBottomColor: COLORS.border,
   },
   backButtonText: {
     marginLeft: 8,
     fontSize: 16,
-    color: "#2c3e50",
+    color: COLORS.textPrimary,
     fontWeight: "500",
   },
   scrollContent: {
@@ -121,15 +118,18 @@ const styles = StyleSheet.create({
     ...TOPOGRAPHY.h3,
     marginTop: 20,
     marginBottom: 8,
+    color: COLORS.textPrimary,
   },
   paragraph: {
     ...TOPOGRAPHY.body,
     marginBottom: 12,
+    color: COLORS.textSecondary,
   },
   subTitle: {
-    ...TOPOGRAPHY.h3,
+    ...TOPOGRAPHY.h3, // Reuse h3 or use label
     fontSize: 16,
     marginBottom: 4,
     marginTop: 8,
+    color: COLORS.textPrimary,
   },
 });

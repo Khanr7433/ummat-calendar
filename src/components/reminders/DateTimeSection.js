@@ -19,7 +19,9 @@ export default function DateTimeSection({ date, onDatePress, onTimePress }) {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.dateTimeCard} onPress={onTimePress}>
-        <View style={[styles.iconCircle, { backgroundColor: "#ECFDF5" }]}>
+        <View
+          style={[styles.iconCircle, { backgroundColor: COLORS.successBg }]}
+        >
           <Ionicons name="time" size={20} color={COLORS.success} />
         </View>
         <View>
@@ -61,7 +63,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#EEF2FF",
+    backgroundColor: COLORS.primaryBg,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,

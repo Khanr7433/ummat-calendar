@@ -34,10 +34,20 @@ export const AppProvider = ({ children }) => {
   });
 
   // Header Date State
-  const [headerDate, setHeaderDate] = useState({ hijri: "", gregorian: "" });
+  const [headerDate, setHeaderDate] = useState(() => {
+    const today = new Date();
+    return {
+      hijri: DateService.getOfflineHijriDate(today),
+      gregorian: today.toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+    };
+  });
 
   // Load settings and date on mount
-  React.useEffect(() => {
+  useEffect(() => {
     const loadData = async () => {
       // 1. Load Settings
       await DailyNotificationService.loadSettings();
@@ -94,34 +104,53 @@ export const AppProvider = ({ children }) => {
     );
   };
 
-  const value = {
-    // State
-    currentMonthIndex,
-    isScrollEnabled,
-    showBack,
-    isMonthSelectorVisible,
-    isSettingsVisible,
-    isRemindersVisible,
-    calendarData,
+  const value = React.useMemo(
+    () => ({
+      // State
+      currentMonthIndex,
+      isScrollEnabled,
+      showBack,
+      isMonthSelectorVisible,
+      isSettingsVisible,
+      isRemindersVisible,
+      calendarData,
 
-    // Setters
-    setIsScrollEnabled,
-    setCurrentMonthIndex, // Exposed for direct syncing with FlatList scroll events
+      // Setters
+      setIsScrollEnabled,
+      setCurrentMonthIndex,
 
-    // Actions
-    toggleFlip,
-    setMonthIndex,
-    openMonthSelector,
-    closeMonthSelector,
-    openSettings,
-    closeSettings,
-    openReminders,
-    closeReminders,
-    dailyNotificationSettings,
-    dailyNotificationSettings,
-    updateDailyNotificationSettings,
-    headerDate,
-  };
+      // Actions
+      toggleFlip,
+      setMonthIndex,
+      openMonthSelector,
+      closeMonthSelector,
+      openSettings,
+      closeSettings,
+      openReminders,
+      closeReminders,
+      dailyNotificationSettings,
+      updateDailyNotificationSettings,
+      headerDate,
+    }),
+    [
+      currentMonthIndex,
+      isScrollEnabled,
+      showBack,
+      isMonthSelectorVisible,
+      isSettingsVisible,
+      isRemindersVisible,
+      dailyNotificationSettings,
+      headerDate,
+      toggleFlip,
+      setMonthIndex,
+      openMonthSelector,
+      closeMonthSelector,
+      openSettings,
+      closeSettings,
+      openReminders,
+      closeReminders,
+    ],
+  );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

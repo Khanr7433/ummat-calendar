@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(0,0,0,0.03)",
   },
   expiredContainer: {
-    backgroundColor: "#F9FAFB",
+    backgroundColor: COLORS.surfaceAlt,
     borderColor: COLORS.border,
     shadowOpacity: 0,
     elevation: 0,
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#EEF2FF", // Light Indigo
+    backgroundColor: COLORS.primaryBg, // Light Indigo
     justifyContent: "center",
     alignItems: "center",
   },
@@ -181,16 +181,16 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   alertBadge: {
-    backgroundColor: "#EEF2FF",
+    backgroundColor: COLORS.primaryBg,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     borderWidth: 0.5,
-    borderColor: "#C7D2FE",
+    borderColor: COLORS.primaryBorder,
   },
   alertBadgeText: {
     fontSize: 10,
-    color: "#34495E",
+    color: "#34495E", // Keep specific dark blue or use textSecondary
     fontWeight: "500",
   },
 });
