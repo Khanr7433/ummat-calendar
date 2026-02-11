@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const HIJRI_API_BASE = "http://api.aladhan.com/v1/gToHCalendar";
+const HIJRI_API_BASE = "https://api.aladhan.com/v1/gToHCalendar";
 const CACHE_KEY_PREFIX = "gtoh_cal_kara_v4_"; // Forced India Location
 
 class DateService {
