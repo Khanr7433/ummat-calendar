@@ -8,6 +8,7 @@ import React, {
 import calendarData from "../data/calendarData";
 import DailyNotificationService from "../services/DailyNotificationService";
 import DateService from "../services/DateService";
+import NetInfo from "@react-native-community/netinfo";
 
 const AppContext = createContext();
 
@@ -42,6 +43,7 @@ export const AppProvider = ({ children }) => {
         day: "numeric",
         month: "long",
         year: "numeric",
+        weekday: "long",
       }),
     };
   });
@@ -66,6 +68,22 @@ export const AppProvider = ({ children }) => {
       setHeaderDate(dateData);
     };
     loadData();
+  }, []);
+
+  // Listen for Network State Changes
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (state.isConnected && state.isInternetReachable) {
+        // Re-fetch date data when online
+        DateService.getDateData(new Date(), true).then((dateData) => {
+          if (dateData) {
+            setHeaderDate(dateData);
+          }
+        });
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Actions

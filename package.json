@@ -12,6 +12,7 @@
     "@dudigital/react-native-zoomable-view": "^1.1.4",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
+    "@react-native-community/netinfo": "11.4.1",
     "expo": "^54.0.32",
     "expo-av": "~16.0.8",
     "expo-build-properties": "~1.0.10",
