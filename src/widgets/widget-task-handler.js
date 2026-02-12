@@ -1,6 +1,5 @@
 import React from "react";
-// import { WidgetTaskHandlerProps } from "react-native-android-widget";
-import { CircularClockWidget } from "./src/widgets/CircularClockWidget";
+import { CircularClockWidget } from "./CircularClockWidget";
 
 const nameToWidget = {
   // HelloWidget will be the name of the widget we define in app.json
