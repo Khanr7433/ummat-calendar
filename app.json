@@ -33,23 +33,6 @@
     },
     "plugins": [
       [
-        "react-native-android-widget",
-        {
-          "widgets": [
-            {
-              "name": "CircularClock",
-              "label": "Ummat Circular Clock",
-              "minWidth": "320dp",
-              "minHeight": "320dp",
-              "description": "A circular clock with Hijri/Gregorian dates.",
-              "previewImage": "./assets/icon.png",
-              "resizeMode": "horizontal|vertical",
-              "updatePeriodMillis": 1800000
-            }
-          ]
-        }
-      ],
-      [
         "expo-build-properties",
         {
           "android": {
