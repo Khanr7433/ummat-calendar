@@ -8,11 +8,13 @@ import React, {
 import calendarData from "../data/calendarData";
 import DailyNotificationService from "../services/DailyNotificationService";
 import DateService from "../services/DateService";
+import WidgetSyncService from "../services/WidgetSyncService";
 import NetInfo from "@react-native-community/netinfo";
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
+  // ... (State definitions remain same) ...
   // Calendar State
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
@@ -66,6 +68,9 @@ export const AppProvider = ({ children }) => {
       // Always try to use location for correctness as per requirements
       const dateData = await DateService.getDateData(new Date(), true);
       setHeaderDate(dateData);
+
+      // 3. Sync Widget
+      await WidgetSyncService.sync();
     };
     loadData();
   }, []);
@@ -78,6 +83,8 @@ export const AppProvider = ({ children }) => {
         DateService.getDateData(new Date(), true).then((dateData) => {
           if (dateData) {
             setHeaderDate(dateData);
+            // Sync Widget on update
+            WidgetSyncService.sync();
           }
         });
       }

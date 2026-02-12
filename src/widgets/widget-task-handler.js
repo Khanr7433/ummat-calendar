@@ -1,41 +1,157 @@
 import React from "react";
 import { CircularClockWidget } from "./CircularClockWidget";
 
+// Mapping for English to Urdu months
+const urduMonths = {
+  January: "جنوری",
+  February: "فروری",
+  March: "مارچ",
+  April: "اپریل",
+  May: "مئی",
+  June: "جون",
+  July: "جولائی",
+  August: "اگست",
+  September: "ستمبر",
+  October: "اکتوبر",
+  November: "نومبر",
+  December: "دسمبر",
+};
+
+// Mapping for English to Urdu days
+const urduDays = {
+  Sunday: "اتوار",
+  Monday: "پیر",
+  Tuesday: "منگل",
+  Wednesday: "بدھ",
+  Thursday: "جمعرات",
+  Friday: "جمعہ",
+  Saturday: "ہفتہ",
+};
+
+// Helper to convert English digits to Urdu digits
+const toUrduDigits = (str) => {
+  const id = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+  return str.replace(/[0-9]/g, (w) => id[+w]);
+};
+
+// Simplified Hijri Date Fetcher (replicating DateService logic roughly for widget)
+// In a real app, you might want to share this data via AsyncStorage or SharedPrefs completely,
+// but for a widget, standalone fetch is often more reliable if background restrictions allow.
+// Ideally, the main app should fetch and store 'today's data' in a shared storage that the widget reads.
+// For now, we'll try to calculate/fetch or use a fallback.
+async function getHijriDate(date) {
+  try {
+    // Fallback offline calculation (similar to DateService.getOfflineHijriDate)
+    // Using -1 or -2 adjustment as per DateService logic
+    const adjustedDate = new Date(date);
+    adjustedDate.setDate(date.getDate() - 1);
+
+    const formatted = new Intl.DateTimeFormat("en-GB-u-ca-islamic", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(adjustedDate);
+
+    // Format: "23 Shaban 1447 AH" -> remove AH
+    let clean = formatted.replace(" AH", "").trim();
+
+    // Improve Urdu mapping for Hijri months if possible, or return English for now
+    // The image shows "1447 شعبان 23".
+    // We need to parse "23 Shaban 1447"
+
+    const parts = clean.split(" ");
+    if (parts.length >= 3) {
+      // naive parse
+      const day = parts[0];
+      const month = parts[1];
+      const year = parts[2];
+
+      const hijriMonthsUrdu = {
+        Muharram: "محرم",
+        Safar: "صفر",
+        "Rabiʻ I": "ربیع الاول",
+        "Rabiʻ II": "ربیع الثانی",
+        "Jumada I": "جمادی الاول",
+        "Jumada II": "جمادی الثانی",
+        Rajab: "رجب",
+        shaʻban: "شعبان",
+        Shaban: "شعبان",
+        Ramadan: "رمضان",
+        Shawwal: "شوال",
+        "Dhu al-Qadah": "ذو القعدہ",
+        "Dhu al-Hijjah": "ذو الحجہ",
+      };
+
+      const urduMonth = hijriMonthsUrdu[month] || month;
+      return `${year} ${urduMonth} ${day}`; // 1447 شعبان 23
+    }
+
+    return clean;
+  } catch (e) {
+    return "";
+  }
+}
+
 const nameToWidget = {
-  // HelloWidget will be the name of the widget we define in app.json
-  CircularClock: (props) => {
+  CircularClock: async (props) => {
     const now = new Date();
 
-    // Format English
-    const time = now.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-    const date = now.getDate();
-    const month = now.toLocaleString("en-US", { month: "long" });
-    const year = now.getFullYear();
+    // English Time (Center Big)
+    // English Time (Center Big) - Force English Digits
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
 
-    // Format Urdu
-    // Note: React Native's Intl support depends on the engine (Hermes supports it).
-    // If not, we might need manual mapping. Assuming Hermes is enabled.
-    const timeUrdu = now.toLocaleTimeString("ur-PK", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-    const monthUrdu = now.toLocaleString("ur-PK", { month: "long" });
-    const dayUrdu = now.getDate().toLocaleString("ur-PK"); // Just the number in Urdu digits if locale works
+    // Convert to 12-hour format
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+
+    const hStr = hours.toString().padStart(2, "0");
+    const mStr = minutes.toString().padStart(2, "0");
+
+    const time = `${hStr}:${mStr}`;
+    // Actually image has "01:27" in big text and "PM 04:57" below.
+    // Usually big clocks are 12h or 24h. Let's stick to 24h or 12h padded.
+    // 01:27 suggests padded hour.
+
+    // Top Row: Urdu Date "February 12 Thursday" -> "فروری 12 جمعرات"
+    const dayNameEng = now.toLocaleDateString("en-US", { weekday: "long" });
+    const monthNameEng = now.toLocaleDateString("en-US", { month: "long" });
+    const dateNum = now.getDate();
+
+    const dayNameUrdu = urduDays[dayNameEng] || dayNameEng;
+    const monthNameUrdu = urduMonths[monthNameEng] || monthNameEng;
+
+    // "Month Date Day" -> "فروری 12 جمعرات"
+    const topDateText = `${monthNameUrdu} ${dateNum} ${dayNameUrdu}`;
+
+    // Second Row: Hijri Date "1447 شعبان 23"
+    const hijriDateText = await getHijriDate(now);
+
+    // Bottom Row: Prayer Time (Mocking or fetching?)
+    // Since we don't have easy access to the configured location and prayer calculation logic here
+    // (it's in the app context/services which might depend on libraries not available in the headless task or require context),
+    // we might skip valid prayer times for now or put a placeholder/current time.
+    // The image shows "PM 04:57 عصر".
+    // Let's try to just show "Ummat Calendar" or location if available?
+    // Image has "Kondhwa ..." and "PM 04:57 عصر".
+    // For now, let's put a static location or just "Ummat" and maybe the next prayer if we can calculate it.
+    // Without `adhan` library or similar in the widget handler, we can't calc easily.
+    // We will leave the bottom text generic or remove it to avoid wrong info.
+    // Or we can display the current time with AM/PM there as a secondary display?
+    // Image implies: Top=Gregorian, Below=Hijri, Center=Time, Below=Location, Bottom=NextPrayer.
+
+    // We will stick to:
+    // Top: Gregorian Urdu
+    // Below: Hijri
+    // Center: Time
+    // Bottom: "Ummat Calendar" (instead of location/prayer for now to be safe)
 
     return (
       <CircularClockWidget
-        date={date}
-        month={month}
-        year={year}
         time={time}
-        timeUrdu={timeUrdu}
-        monthUrdu={monthUrdu}
-        dayUrdu={dayUrdu}
+        topDateText={topDateText}
+        hijriDateText={hijriDateText}
+        bottomText="Ummat Calendar"
       />
     );
   },
@@ -46,6 +162,8 @@ export async function widgetTaskHandler(props) {
   const WidgetComponent = nameToWidget[widgetInfo.widgetName];
 
   if (WidgetComponent) {
-    props.renderWidget(<WidgetComponent />);
+    // Note: WidgetComponent is async now
+    const rendered = await WidgetComponent(props);
+    props.renderWidget(rendered);
   }
 }

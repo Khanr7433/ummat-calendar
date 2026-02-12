@@ -3,38 +3,25 @@ import { StyleSheet } from "react-native";
 import { FlexWidget, TextWidget } from "react-native-android-widget";
 
 export function CircularClockWidget({
-  date,
-  month,
-  year,
   time,
-  timeUrdu,
-  monthUrdu,
-  dayUrdu,
+  topDateText,
+  hijriDateText,
+  bottomText,
 }) {
   return (
     <FlexWidget style={styles.container}>
       <FlexWidget style={styles.contentContainer}>
-        {/* English Time */}
+        {/* Top: Gregorian Date (Urdu) */}
+        <TextWidget text={topDateText} style={styles.topDateText} />
+
+        {/* Second: Hijri Date */}
+        <TextWidget text={hijriDateText} style={styles.hijriDateText} />
+
+        {/* Center: Time */}
         <TextWidget text={time} style={styles.timeText} />
 
-        {/* Urdu Time */}
-        <TextWidget text={timeUrdu} style={styles.urduTimeText} />
-
-        {/* Date Row */}
-        <FlexWidget style={styles.dateRow}>
-          <TextWidget
-            text={`${date} ${month} ${year}`}
-            style={styles.dateText}
-          />
-        </FlexWidget>
-
-        {/* Urdu Date Row */}
-        <FlexWidget style={styles.dateRow}>
-          <TextWidget
-            text={`${dayUrdu} ${monthUrdu} ${year}`}
-            style={styles.urduDateText}
-          />
-        </FlexWidget>
+        {/* Bottom: Label/Location */}
+        <TextWidget text={bottomText} style={styles.bottomText} />
       </FlexWidget>
     </FlexWidget>
   );
@@ -46,8 +33,7 @@ const styles = StyleSheet.create({
     width: "match_parent",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderRadius: 160, // Make it circular, half of 320 (typical widget size) or simpler to use a large number
+    backgroundColor: "#00000000", // Transparent background for container
   },
   contentContainer: {
     flexDirection: "column",
@@ -55,35 +41,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: "match_parent",
     width: "match_parent",
-    borderRadius: 160,
-    backgroundColor: "#ffffff",
-    borderColor: "#e0e0e0",
+    borderRadius: 160, // Circular
+    backgroundColor: "#1a1a1a", // Dark background
+    borderColor: "#ffffff",
     borderWidth: 2,
+    padding: 16,
+  },
+  topDateText: {
+    fontSize: 18,
+    color: "#ffffff",
+    marginBottom: 4,
+    // fontFamily: 'Jameel Noori Nastaleeq', // Not available
+  },
+  hijriDateText: {
+    fontSize: 20,
+    color: "#ffffff",
+    marginBottom: 16,
+    // fontFamily: 'Jameel Noori Nastaleeq',
   },
   timeText: {
-    fontSize: 24,
-    color: "#000000",
+    fontSize: 48, // Big Time
+    color: "#ffffff",
     fontWeight: "bold",
+    marginBottom: 16,
   },
-  urduTimeText: {
-    fontSize: 24,
-    color: "#000000",
-    fontWeight: "bold",
-    marginTop: 4,
-  },
-  dateRow: {
-    marginTop: 8,
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  dateText: {
+  bottomText: {
     fontSize: 14,
-    color: "#333333",
-  },
-  urduDateText: {
-    fontSize: 16,
-    color: "#333333",
-    // fontFamily: "Jameel Noori Nastaleeq", // Font not available
-    marginTop: 2,
+    color: "#cccccc", // Slightly dimmer
   },
 });
