@@ -45,3 +45,5 @@ yarn-error.*
 scripts/
 store_assets/
 key.properties
+.idea/
+.vscode/

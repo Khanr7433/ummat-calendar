@@ -47,7 +47,7 @@ class WidgetSyncService {
       const dayNameUrdu = urduDays[dayNameEng] || dayNameEng;
       const monthNameUrdu = urduMonths[monthNameEng] || monthNameEng;
 
-      const topDateText = `${monthNameUrdu} ${dateNum} ${dayNameUrdu}`;
+      const topDateText = `${dayNameUrdu} ${dateNum} ${monthNameUrdu}`;
 
       // 2. Calculate Hijri Date
       const dateData = await DateService.getDateData(now, true);
@@ -63,23 +63,30 @@ class WidgetSyncService {
         const month = parts[1];
         const year = parts[2];
 
+        const normalize = (s) =>
+          s
+            .normalize("NFD")
+            .replace(/[^a-zA-Z -]/g, "")
+            .trim()
+            .toLowerCase();
+
         const hijriMonthsUrdu = {
-          Muharram: "محرم",
-          Safar: "صفر",
-          "Rabiʻ I": "ربیع الاول",
-          "Rabiʻ II": "ربیع الثانی",
-          "Jumada I": "جمادی الاول",
-          "Jumada II": "جمادی الثانی",
-          Rajab: "رجب",
-          shaʻban: "شعبان",
-          Shaban: "شعبان",
-          Ramadan: "رمضان",
-          Shawwal: "شوال",
-          "Dhu al-Qadah": "ذو القعدہ",
-          "Dhu al-Hijjah": "ذو الحجہ",
+          muharram: "محرم",
+          safar: "صفر",
+          "rabi i": "ربیع الاول",
+          "rabi ii": "ربیع الثانی",
+          "jumada i": "جمادی الاول",
+          "jumada ii": "جمادی الثانی",
+          rajab: "رجب",
+          shaban: "شعبان",
+          ramadan: "رمضان",
+          shawwal: "شوال",
+          "dhu al-qadah": "ذو القعدہ",
+          "dhu al-hijjah": "ذو الحجہ",
         };
-        const urduMonth = hijriMonthsUrdu[month] || month;
-        hijriDateText = `${year} ${urduMonth} ${day}`;
+        const normalizedMonth = normalize(month);
+        const urduMonth = hijriMonthsUrdu[normalizedMonth] || month;
+        hijriDateText = `${day} ${urduMonth} ${year}`;
       }
 
       // 3. Save to Shared Preferences

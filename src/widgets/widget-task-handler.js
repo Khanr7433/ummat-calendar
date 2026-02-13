@@ -61,29 +61,36 @@ async function getHijriDate(date) {
 
     const parts = clean.split(" ");
     if (parts.length >= 3) {
-      // naive parse
       const day = parts[0];
       const month = parts[1];
       const year = parts[2];
 
+      // Normalize month name: NFD decompose, then keep only ASCII letters/spaces/hyphens
+      const normalize = (s) =>
+        s
+          .normalize("NFD")
+          .replace(/[^a-zA-Z -]/g, "")
+          .trim()
+          .toLowerCase();
+
       const hijriMonthsUrdu = {
-        Muharram: "محرم",
-        Safar: "صفر",
-        "Rabiʻ I": "ربیع الاول",
-        "Rabiʻ II": "ربیع الثانی",
-        "Jumada I": "جمادی الاول",
-        "Jumada II": "جمادی الثانی",
-        Rajab: "رجب",
-        shaʻban: "شعبان",
-        Shaban: "شعبان",
-        Ramadan: "رمضان",
-        Shawwal: "شوال",
-        "Dhu al-Qadah": "ذو القعدہ",
-        "Dhu al-Hijjah": "ذو الحجہ",
+        muharram: "محرم",
+        safar: "صفر",
+        "rabi i": "ربیع الاول",
+        "rabi ii": "ربیع الثانی",
+        "jumada i": "جمادی الاول",
+        "jumada ii": "جمادی الثانی",
+        rajab: "رجب",
+        shaban: "شعبان",
+        ramadan: "رمضان",
+        shawwal: "شوال",
+        "dhu al-qadah": "ذو القعدہ",
+        "dhu al-hijjah": "ذو الحجہ",
       };
 
-      const urduMonth = hijriMonthsUrdu[month] || month;
-      return `${year} ${urduMonth} ${day}`; // 1447 شعبان 23
+      const normalizedMonth = normalize(month);
+      const urduMonth = hijriMonthsUrdu[normalizedMonth] || month;
+      return `${day} ${urduMonth} ${year}`; // 24 شعبان 1447
     }
 
     return clean;
@@ -121,8 +128,8 @@ const nameToWidget = {
     const dayNameUrdu = urduDays[dayNameEng] || dayNameEng;
     const monthNameUrdu = urduMonths[monthNameEng] || monthNameEng;
 
-    // "Month Date Day" -> "فروری 12 جمعرات"
-    const topDateText = `${monthNameUrdu} ${dateNum} ${dayNameUrdu}`;
+    // RTL order: date number first from right -> "جمعہ فروری 13"
+    const topDateText = `${dayNameUrdu} ${dateNum} ${monthNameUrdu}`;
 
     // Second Row: Hijri Date "1447 شعبان 23"
     const hijriDateText = await getHijriDate(now);
