@@ -31,7 +31,7 @@ const urduDays = {
   Wednesday: "بدھ",
   Thursday: "جمعرات",
   Friday: "جمعہ",
-  Saturday: "ہفتہ",
+  Saturday: "سنیچر",
 };
 
 class WidgetSyncService {

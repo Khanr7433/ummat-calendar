@@ -25,7 +25,7 @@ const urduDays = {
   Wednesday: "بدھ",
   Thursday: "جمعرات",
   Friday: "جمعہ",
-  Saturday: "ہفتہ",
+  Saturday: "سنیچر",
 };
 
 // Helper to convert English digits to Urdu digits
