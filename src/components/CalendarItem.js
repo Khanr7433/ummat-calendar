@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   cardContainer: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.background,
     borderRadius: 0,
     shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 0 },

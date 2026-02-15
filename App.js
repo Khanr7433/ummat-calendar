@@ -5,6 +5,7 @@ import CustomSplashScreen from "./src/screens/CustomSplashScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import { AppProvider } from "./src/context/AppContext";
 import { ReminderService } from "./src/services/ReminderService";
+import { registerBackgroundSync } from "./src/services/BackgroundSync";
 import DailyNotificationService from "./src/services/DailyNotificationService";
 import { checkAppUpdate } from "./src/services/InAppUpdate";
 
@@ -16,6 +17,7 @@ export default function App() {
       ReminderService.initialize();
       ReminderService.rescheduleAllReminders();
       await DailyNotificationService.refresh();
+      await registerBackgroundSync();
       checkAppUpdate();
     };
     init();

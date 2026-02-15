@@ -1,42 +1,31 @@
 import DefaultPreference from "react-native-default-preference";
 import { NativeModules } from "react-native";
 import DateService from "./DateService";
-
-const WIDGET_TOP_DATE_KEY = "widget_top_date";
-const WIDGET_HIJRI_DATE_KEY = "widget_hijri_date";
+import {
+  urduMonths,
+  urduDays,
+  hijriMonthsUrdu,
+  normalizeDateString,
+} from "../utils/UrduDateUtils";
+import { APP_CONFIG } from "../constants/Config";
 
 // ... (mappings remain same) ...
 
-// Mapping for English to Urdu months
-const urduMonths = {
-  January: "جنوری",
-  February: "فروری",
-  March: "مارچ",
-  April: "اپریل",
-  May: "مئی",
-  June: "جون",
-  July: "جولائی",
-  August: "اگست",
-  September: "ستمبر",
-  October: "اکتوبر",
-  November: "نومبر",
-  December: "دسمبر",
-};
-
-// Mapping for English to Urdu days
-const urduDays = {
-  Sunday: "اتوار",
-  Monday: "پیر",
-  Tuesday: "منگل",
-  Wednesday: "بدھ",
-  Thursday: "جمعرات",
-  Friday: "جمعہ",
-  Saturday: "سنیچر",
-};
-
 class WidgetSyncService {
-  async sync() {
+  constructor() {
+    this.lastSyncTime = 0;
+    this.MIN_SYNC_INTERVAL = 10000; // 10 seconds
+  }
+
+  async sync(force = false) {
     try {
+      const nowTime = Date.now();
+      if (!force && nowTime - this.lastSyncTime < this.MIN_SYNC_INTERVAL) {
+        console.log("Skipping Widget Sync (Throttled)");
+        return;
+      }
+      this.lastSyncTime = nowTime;
+
       const now = new Date();
 
       // 1. Calculate Top Date (Gregorian Urdu)
@@ -63,36 +52,19 @@ class WidgetSyncService {
         const month = parts[1];
         const year = parts[2];
 
-        const normalize = (s) =>
-          s
-            .normalize("NFD")
-            .replace(/[^a-zA-Z -]/g, "")
-            .trim()
-            .toLowerCase();
-
-        const hijriMonthsUrdu = {
-          muharram: "محرم",
-          safar: "صفر",
-          "rabi i": "ربیع الاول",
-          "rabi ii": "ربیع الثانی",
-          "jumada i": "جمادی الاول",
-          "jumada ii": "جمادی الثانی",
-          rajab: "رجب",
-          shaban: "شعبان",
-          ramadan: "رمضان",
-          shawwal: "شوال",
-          "dhu al-qadah": "ذو القعدہ",
-          "dhu al-hijjah": "ذو الحجہ",
-        };
-        const normalizedMonth = normalize(month);
-        const urduMonth = hijriMonthsUrdu[normalizedMonth] || month;
+        // Use utility for normalization
+        const normalizedMonth = normalizeDateString(month);
+        const urduMonth = hijriMonthsUrdu.default[normalizedMonth] || month;
         hijriDateText = `${day} ${urduMonth} ${year}`;
       }
 
       // 3. Save to Shared Preferences
-      await DefaultPreference.setName("react-native");
-      await DefaultPreference.set(WIDGET_TOP_DATE_KEY, topDateText);
-      await DefaultPreference.set(WIDGET_HIJRI_DATE_KEY, hijriDateText);
+      await DefaultPreference.setName(APP_CONFIG.SHARED_PREFS_NAME);
+      await DefaultPreference.set(APP_CONFIG.WIDGET_KEYS.TOP_DATE, topDateText);
+      await DefaultPreference.set(
+        APP_CONFIG.WIDGET_KEYS.HIJRI_DATE,
+        hijriDateText,
+      );
 
       console.log("Widget Data Synced:", topDateText, hijriDateText);
 

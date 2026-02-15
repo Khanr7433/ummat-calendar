@@ -1,7 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const HIJRI_API_BASE = "https://api.aladhan.com/v1/gToHCalendar";
-const CACHE_KEY_PREFIX = "gtoh_cal_kara_v4_"; // Forced India Location
+import { APP_CONFIG } from "../constants/Config";
 
 class DateService {
   /**
@@ -9,11 +7,12 @@ class DateService {
    */
   async fetchHijriCalendar(year, month, latitude, longitude) {
     try {
-      // Default to India (New Delhi) if location is unavailable
-      const lat = latitude || 28.6139;
-      const long = longitude || 77.209;
+      // Default to Configured Location (India) if location is unavailable
+      const lat = latitude || APP_CONFIG.LOCATION.LATITUDE;
+      const long = longitude || APP_CONFIG.LOCATION.LONGITUDE;
+      const method = APP_CONFIG.LOCATION.METHOD;
 
-      let url = `${HIJRI_API_BASE}/${month}/${year}?method=1&latitude=${lat}&longitude=${long}`;
+      let url = `${APP_CONFIG.HIJRI_API_BASE}/${month}/${year}?method=${method}&latitude=${lat}&longitude=${long}`;
 
       const response = await fetch(url);
       const data = await response.json();
@@ -35,7 +34,7 @@ class DateService {
    */
   async cacheMonthData(year, month, data) {
     try {
-      const key = `${CACHE_KEY_PREFIX}${year}_${month}`;
+      const key = `${APP_CONFIG.CACHE_KEY_PREFIX}${year}_${month}`;
       await AsyncStorage.setItem(key, JSON.stringify(data));
     } catch (error) {
       console.warn("Error caching data:", error);
@@ -47,7 +46,7 @@ class DateService {
    */
   async getCachedMonthData(year, month) {
     try {
-      const key = `${CACHE_KEY_PREFIX}${year}_${month}`;
+      const key = `${APP_CONFIG.CACHE_KEY_PREFIX}${year}_${month}`;
       const json = await AsyncStorage.getItem(key);
       return json ? JSON.parse(json) : null;
     } catch (error) {
@@ -87,11 +86,9 @@ class DateService {
     let monthData = await this.getCachedMonthData(year, month);
 
     if (!monthData) {
-      // FORCE LOCATION: India (New Delhi)
-      // We are ignoring the user's actual location to ensure the date matches the printed
-      // Ummat Calendar which is based on Indian Moon Sighting.
-      const latitude = 28.6139;
-      const longitude = 77.209;
+      // FORCE LOCATION from Config
+      const latitude = APP_CONFIG.LOCATION.LATITUDE;
+      const longitude = APP_CONFIG.LOCATION.LONGITUDE;
 
       monthData = await this.fetchHijriCalendar(
         year,
